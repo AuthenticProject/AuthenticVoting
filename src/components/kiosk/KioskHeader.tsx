@@ -49,31 +49,21 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({
               <span
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   currentStep === 'selection'
-                    ? 'bg-gold-accent text-navy-900 font-bold shadow-sm'
+                    ? 'bg-gold-accent text-navy-primary font-bold shadow-sm'
                     : 'bg-navy-secondary text-slate-300'
                 }`}
               >
-                1. Pilih
-              </span>
-              <span className="text-slate-500">→</span>
-              <span
-                className={`px-2.5 py-1 rounded-lg transition-all ${
-                  currentStep === 'confirmation'
-                    ? 'bg-gold-accent text-navy-900 font-bold shadow-sm'
-                    : 'bg-navy-secondary text-slate-300'
-                }`}
-              >
-                2. Konfirmasi
+                1. Pilih Kandidat
               </span>
               <span className="text-slate-500">→</span>
               <span
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   currentStep === 'success'
-                    ? 'bg-success text-white font-bold'
+                    ? 'bg-gold-accent text-navy-primary font-bold shadow-sm'
                     : 'bg-navy-secondary text-slate-400'
                 }`}
               >
-                3. Selesai
+                2. Selesai
               </span>
             </div>
           </div>

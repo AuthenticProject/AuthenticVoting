@@ -22,7 +22,7 @@ export interface Candidate {
   vision?: string;
 }
 
-export type KioskStep = 'welcome' | 'selection' | 'confirmation' | 'success';
+export type KioskStep = 'welcome' | 'selection' | 'success';
 
 export interface VoteSubmissionPayload {
   election_id: string;

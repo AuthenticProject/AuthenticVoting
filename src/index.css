@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    --navy-primary: #101D35;
-    --navy-secondary: #24344E;
-    --accent-gold: #C9A45C;
+    --navy-primary: #1C1C1E;
+    --navy-secondary: #2C2C2E;
+    --accent-gold: #D4AF37;
     --light-gray: #F3F5F9;
     --success-green: #16A34A;
   }
@@ -33,30 +33,30 @@
 
 /* Kiosk background subtle ornament pattern */
 .bg-institutional-pattern {
-  background-color: #101D35;
-  background-image: radial-gradient(circle at 50% 0%, rgba(36, 52, 78, 0.7) 0%, rgba(16, 29, 53, 0.95) 75%),
-                    linear-gradient(rgba(201, 164, 92, 0.04) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(201, 164, 92, 0.04) 1px, transparent 1px);
+  background-color: #1C1C1E;
+  background-image: radial-gradient(circle at 50% 0%, rgba(44, 44, 46, 0.7) 0%, rgba(28, 28, 30, 0.95) 75%),
+                    linear-gradient(rgba(212, 175, 55, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(212, 175, 55, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 48px 48px, 48px 48px;
 }
 
 .bg-institutional-light {
   background-color: #F3F5F9;
-  background-image: radial-gradient(circle at 50% -20%, rgba(201, 164, 92, 0.08) 0%, transparent 60%),
-                    radial-gradient(circle at 100% 100%, rgba(16, 29, 53, 0.04) 0%, transparent 50%);
+  background-image: radial-gradient(circle at 50% -20%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+                    radial-gradient(circle at 100% 100%, rgba(28, 28, 30, 0.04) 0%, transparent 50%);
 }
 
 /* Gold foil gradient effect */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #DFBF7A 0%, #C9A45C 50%, #9F7E3B 100%);
+  background: linear-gradient(135deg, #E5C158 0%, #D4AF37 50%, #B08D23 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .bg-gold-gradient {
-  background: linear-gradient(135deg, #DFBF7A 0%, #C9A45C 50%, #B89249 100%);
+  background: linear-gradient(135deg, #E5C158 0%, #D4AF37 50%, #B08D23 100%);
 }
 
 .border-gold-glow {
-  box-shadow: 0 0 0 2px rgba(201, 164, 92, 0.5), 0 10px 25px -5px rgba(201, 164, 92, 0.3);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5), 0 10px 25px -5px rgba(212, 175, 55, 0.3);
 }

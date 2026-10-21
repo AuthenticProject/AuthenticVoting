@@ -1,29 +1,38 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, User } from 'lucide-react';
+import { Loader2, User, Check } from 'lucide-react';
 import type { Candidate } from '../../types/election';
 
 interface CandidateCardProps {
   candidate: Candidate;
   isSelected: boolean;
-  onSelect: (candidate: Candidate) => void;
+  isSubmitting: boolean;
   disabled?: boolean;
+  onSelect: (candidate: Candidate) => void;
 }
 
 export const CandidateCard: React.FC<CandidateCardProps> = ({
   candidate,
   isSelected,
-  onSelect,
+  isSubmitting,
   disabled = false,
+  onSelect,
 }) => {
   const [imgError, setImgError] = React.useState(false);
   const formattedNumber = String(candidate.candidate_number).padStart(2, '0');
 
+  const handleClick = () => {
+    if (disabled || isSubmitting) return;
+    onSelect(candidate);
+  };
+
+  const isCurrentSubmitting = isSubmitting && isSelected;
+
   return (
     <motion.div
-      whileHover={!disabled ? { y: -4 } : undefined}
-      whileTap={!disabled ? { scale: 0.99 } : undefined}
-      onClick={() => !disabled && onSelect(candidate)}
+      whileHover={!disabled && !isSubmitting ? { y: -4 } : undefined}
+      whileTap={!disabled && !isSubmitting ? { scale: 0.985 } : undefined}
+      onClick={handleClick}
       className={`
         relative flex flex-col justify-between h-full rounded-2xl overflow-hidden
         cursor-pointer transition-all duration-200 border-2 bg-white
@@ -32,36 +41,36 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
             ? 'border-gold-accent shadow-card-selected ring-4 ring-gold-accent/20 bg-gradient-to-b from-gold-50/50 to-white'
             : 'border-slate-200 hover:border-gold-accent/60 shadow-card hover:shadow-card-hover'
         }
-        ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
+        ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
       `}
       role="button"
-      tabIndex={0}
+      tabIndex={disabled || isSubmitting ? -1 : 0}
       aria-pressed={isSelected}
-      aria-label={`Kandidat nomor urut ${formattedNumber}, ${candidate.name}`}
+      aria-label={`Pilih Kandidat nomor urut ${formattedNumber}, ${candidate.name}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          if (!disabled) onSelect(candidate);
+          handleClick();
         }
       }}
     >
       {/* Top Banner: Candidate Number Tag */}
-      <div className="relative flex items-center justify-between p-3.5 sm:p-4 border-b border-slate-100 bg-slate-50/70">
-        <div className="flex items-center gap-2">
+      <div className="relative flex items-center justify-between p-3 sm:p-3.5 border-b border-slate-100 bg-slate-50/80">
+        <div className="flex items-center gap-2.5">
           <div
             className={`
               w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center font-extrabold text-lg sm:text-xl transition-all shadow-sm
               ${
                 isSelected
-                  ? 'bg-gradient-to-br from-gold-accent to-gold-dark text-navy-900 border border-gold-light'
-                  : 'bg-navy-primary text-white'
+                  ? 'bg-gradient-to-br from-gold-accent to-gold-dark text-navy-primary border border-gold-light'
+                  : 'bg-navy-primary text-gold-accent border border-gold-accent/30'
               }
             `}
           >
             {formattedNumber}
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Nomor Urut
             </span>
             <span className="text-xs font-bold text-navy-primary">
@@ -70,25 +79,26 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           </div>
         </div>
 
-        {/* Selected Checkmark Badge */}
-        {isSelected ? (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex items-center gap-1.5 px-3 py-1 bg-gold-accent text-navy-900 font-bold text-xs rounded-full shadow-sm"
-          >
-            <Check className="w-4 h-4 stroke-[3]" />
-            <span>TERPILIH</span>
-          </motion.div>
+        {/* Status Badge */}
+        {isCurrentSubmitting ? (
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-gold-accent/20 text-navy-primary font-bold text-xs rounded-full border border-gold-accent/40 animate-pulse">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-gold-dark" />
+            <span>Menyimpan...</span>
+          </div>
+        ) : isSelected ? (
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-gold-accent text-navy-primary font-bold text-xs rounded-full shadow-sm">
+            <Check className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Dipilih</span>
+          </div>
         ) : (
-          <span className="text-xs font-semibold text-slate-400">
-            Ketuk untuk memilih
+          <span className="text-[11px] sm:text-xs font-medium text-slate-400">
+            Kandidat #{formattedNumber}
           </span>
         )}
       </div>
 
       {/* Candidate Photo Section - Responsive Aspect Ratio */}
-      <div className="relative w-full aspect-[4/4.5] sm:aspect-[4/4.2] bg-slate-100 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full aspect-[4/4.2] sm:aspect-[4/3.8] bg-slate-100 overflow-hidden flex items-center justify-center">
         {!imgError ? (
           <img
             src={candidate.photo_url}
@@ -106,52 +116,59 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           </div>
         )}
 
-        {/* Selection Overlay Tint */}
+        {/* Selection / Submitting Overlay Tint */}
         {isSelected && (
           <div className="absolute inset-0 bg-gold-accent/10 border-b-2 border-gold-accent/40" />
         )}
       </div>
 
-      {/* Candidate Information & Vision */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      {/* Candidate Information & Large PILIH Button */}
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
           <h2 className="text-base sm:text-lg font-extrabold text-navy-primary leading-snug line-clamp-2">
             {candidate.name}
           </h2>
           {candidate.title_or_role && (
-            <p className="text-xs font-medium text-slate-500 mt-1 line-clamp-1">
+            <p className="text-xs font-medium text-slate-500 mt-0.5 line-clamp-1">
               {candidate.title_or_role}
             </p>
           )}
           {candidate.vision && (
-            <p className="text-xs text-slate-600 mt-2.5 italic line-clamp-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+            <p className="text-xs text-slate-600 mt-2 italic line-clamp-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
               "{candidate.vision}"
             </p>
           )}
         </div>
 
-        {/* Large Touch Target Selection Button */}
-        <div className="mt-4 pt-3 border-t border-slate-100">
+        {/* Large Touchscreen "PILIH" Button */}
+        <div className="mt-3 pt-2.5 border-t border-slate-100">
           <button
             type="button"
+            disabled={disabled || isSubmitting}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClick();
+            }}
             className={`
-              w-full min-h-[48px] py-3 px-4 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2
-              transition-all duration-150 select-none touch-manipulation shadow-sm
+              w-full min-h-[52px] sm:min-h-[56px] py-3 px-4 rounded-xl font-extrabold text-base sm:text-lg flex items-center justify-center gap-2.5
+              transition-all duration-150 select-none touch-manipulation shadow-md
               ${
-                isSelected
-                  ? 'bg-gold-accent hover:bg-gold-light text-navy-900 border border-gold-light shadow-gold-accent/20 font-extrabold'
-                  : 'bg-navy-primary/5 hover:bg-navy-primary hover:text-white text-navy-primary border border-navy-primary/20'
+                isCurrentSubmitting
+                  ? 'bg-gold-accent text-navy-primary cursor-wait shadow-gold-glow'
+                  : disabled
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  : 'bg-gold-accent hover:bg-gold-light active:bg-gold-dark text-navy-primary hover:shadow-lg active:scale-98 border border-gold-light'
               }
             `}
-            tabIndex={-1}
+            tabIndex={0}
           >
-            {isSelected ? (
+            {isCurrentSubmitting ? (
               <>
-                <Check className="w-5 h-5 stroke-[2.5]" />
-                <span>PILIHAN ANDA</span>
+                <Loader2 className="w-5 h-5 animate-spin text-navy-primary stroke-[2.5]" />
+                <span className="tracking-wide">MENYIMPAN SUARA...</span>
               </>
             ) : (
-              <span>PILIH KANDIDAT #{formattedNumber}</span>
+              <span className="tracking-wide">PILIH</span>
             )}
           </button>
         </div>

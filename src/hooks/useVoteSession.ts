@@ -33,50 +33,33 @@ export const useVoteSession = () => {
     setCurrentStep('selection');
   }, []);
 
-  // Candidate selection
-  const selectCandidate = useCallback((candidate: Candidate) => {
-    setSelectedCandidate(candidate);
-  }, []);
-
-  // Move from selection to confirmation
-  const proceedToConfirmation = useCallback(() => {
-    if (!selectedCandidate) return;
-    setSubmissionError(null);
-    setCurrentStep('confirmation');
-  }, [selectedCandidate]);
-
-  // Go back from confirmation to selection
-  const backToSelection = useCallback(() => {
+  // Direct candidate submission from Selection Screen (No confirmation screen)
+  const submitCandidateVote = useCallback(async (candidate: Candidate) => {
     if (isSubmitting) return;
-    setSubmissionError(null);
-    setCurrentStep('selection');
-  }, [isSubmitting]);
 
-  // Reset or cancel session back to welcome screen
-  const resetSession = useCallback(() => {
-    setSelectedCandidate(null);
-    setRequestId('');
-    setIsSubmitting(false);
-    setSubmissionError(null);
-    setCurrentStep('welcome');
-  }, []);
+    // If there is an unresolved submission error, prevent switching candidates
+    if (submissionError && selectedCandidate && selectedCandidate.id !== candidate.id) {
+      return;
+    }
 
-  // Submit vote with double-submission protection and requestId idempotency
-  const submitVote = useCallback(async () => {
-    if (!selectedCandidate || isSubmitting) return;
-
+    setSelectedCandidate(candidate);
     setIsSubmitting(true);
     setSubmissionError(null);
 
-    try {
-      // Simulate network request latency to test loading UI & disable double submissions
-      await new Promise((resolve) => setTimeout(resolve, 600));
+    // Reuse existing requestId or create a fresh one if somehow missing
+    const currentRequestId = requestId || generateRequestId();
+    if (!requestId) {
+      setRequestId(currentRequestId);
+    }
 
-      // Record vote via shared election service
-      const result = await recordVote(selectedCandidate.id, requestId);
+    try {
+      // Simulate subtle network latency to ensure visual feedback & disable double submissions
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const result = await recordVote(candidate.id, currentRequestId);
 
       if (result.success) {
-        // Successfully processed in voting flow
+        // Vote recorded successfully -> advance to Screen 3 (Success)
         setCurrentStep('success');
       } else {
         setSubmissionError(result.message || 'Gagal mencatat suara ke database. Sesi tetap tersimpan, silakan tekan Coba Lagi.');
@@ -86,7 +69,22 @@ export const useVoteSession = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedCandidate, isSubmitting, recordVote, requestId]);
+  }, [isSubmitting, submissionError, selectedCandidate, requestId, recordVote]);
+
+  // Safe retry function reusing the exact same requestId and candidate
+  const retryVote = useCallback(async () => {
+    if (!selectedCandidate || isSubmitting) return;
+    await submitCandidateVote(selectedCandidate);
+  }, [selectedCandidate, isSubmitting, submitCandidateVote]);
+
+  // Reset session back to welcome screen (called after success auto-return or manual cancel)
+  const resetSession = useCallback(() => {
+    setSelectedCandidate(null);
+    setRequestId('');
+    setIsSubmitting(false);
+    setSubmissionError(null);
+    setCurrentStep('welcome');
+  }, []);
 
   // Toggle election status for QA / testing screen states
   const toggleElectionStatusForTesting = useCallback((status: Election['status']) => {
@@ -102,11 +100,9 @@ export const useVoteSession = () => {
     isSubmitting,
     submissionError,
     startVoting,
-    selectCandidate,
-    proceedToConfirmation,
-    backToSelection,
+    submitCandidateVote,
+    retryVote,
     resetSession,
-    submitVote,
     toggleElectionStatusForTesting,
   };
 };

@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { KioskLayout } from '../layouts/KioskLayout';
 import { WelcomeScreen } from '../components/kiosk/WelcomeScreen';
 import { CandidateSelectionScreen } from '../components/kiosk/CandidateSelectionScreen';
-import { ConfirmationScreen } from '../components/kiosk/ConfirmationScreen';
 import { SuccessScreen } from '../components/kiosk/SuccessScreen';
 import { useVoteSession } from '../hooks/useVoteSession';
 
@@ -16,11 +15,9 @@ export const VoteKioskPage: React.FC = () => {
     isSubmitting,
     submissionError,
     startVoting,
-    selectCandidate,
-    proceedToConfirmation,
-    backToSelection,
+    submitCandidateVote,
+    retryVote,
     resetSession,
-    submitVote,
     toggleElectionStatusForTesting,
   } = useVoteSession();
 
@@ -60,28 +57,11 @@ export const VoteKioskPage: React.FC = () => {
             <CandidateSelectionScreen
               candidates={candidates}
               selectedCandidate={selectedCandidate}
-              onSelectCandidate={selectCandidate}
-              onProceedToConfirmation={proceedToConfirmation}
-              onCancelSession={resetSession}
-            />
-          </motion.div>
-        )}
-
-        {currentStep === 'confirmation' && selectedCandidate && (
-          <motion.div
-            key="step-confirmation"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.25 }}
-            className="h-full w-full flex flex-col"
-          >
-            <ConfirmationScreen
-              candidate={selectedCandidate}
               isSubmitting={isSubmitting}
               submissionError={submissionError}
-              onConfirm={submitVote}
-              onBack={backToSelection}
+              onSelectCandidate={submitCandidateVote}
+              onRetry={retryVote}
+              onCancelSession={resetSession}
             />
           </motion.div>
         )}
@@ -97,7 +77,7 @@ export const VoteKioskPage: React.FC = () => {
           >
             <SuccessScreen
               onFinish={resetSession}
-              autoReturnSeconds={5}
+              autoReturnSeconds={2}
             />
           </motion.div>
         )}

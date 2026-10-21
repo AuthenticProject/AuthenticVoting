@@ -72,9 +72,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               fullWidth
               rightIcon={<ArrowRight className="w-6 h-6 stroke-[2.5]" />}
               onClick={onStartVoting}
-              className="text-lg sm:text-xl font-extrabold py-4 rounded-2xl shadow-gold-glow"
+              className="text-lg sm:text-xl font-extrabold py-4 rounded-2xl shadow-gold-glow tracking-wide"
             >
-              MULAI VOTING
+              MULAI MEMILIH
             </Button>
           </div>
         )}

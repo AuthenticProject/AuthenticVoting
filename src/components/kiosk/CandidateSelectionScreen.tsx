@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, RotateCcw, AlertCircle } from 'lucide-react';
+import { RotateCcw, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
 import type { Candidate } from '../../types/election';
 import { CandidateCard } from './CandidateCard';
 import { Button } from '../common/Button';
@@ -8,93 +8,142 @@ import { Button } from '../common/Button';
 interface CandidateSelectionScreenProps {
   candidates: Candidate[];
   selectedCandidate: Candidate | null;
+  isSubmitting: boolean;
+  submissionError: string | null;
   onSelectCandidate: (candidate: Candidate) => void;
-  onProceedToConfirmation: () => void;
+  onRetry: () => void;
   onCancelSession: () => void;
 }
 
 export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> = ({
   candidates,
   selectedCandidate,
+  isSubmitting,
+  submissionError,
   onSelectCandidate,
-  onProceedToConfirmation,
+  onRetry,
   onCancelSession,
 }) => {
   return (
-    <div className="h-full flex flex-col justify-between py-3 sm:py-4 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-      {/* Top Instruction Bar */}
+    <div className="h-full flex flex-col justify-between py-2 sm:py-3 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      {/* Top Header & Instructions */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-3 sm:mb-4 shrink-0"
+        className="text-center mb-2 shrink-0"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-accent/15 border border-gold-accent/30 text-navy-primary font-bold text-xs uppercase tracking-wider mb-1">
-          Langkah 1 dari 2
+        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-gold-accent/15 border border-gold-accent/30 text-navy-primary font-bold text-xs uppercase tracking-wider mb-1">
+          Langkah Pemilihan
         </div>
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-navy-primary">
           Pilih Salah Satu Kandidat
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-          Ketuk kartu kandidat untuk memilih, kemudian tekan tombol <span className="font-bold text-navy-primary">Lanjutkan</span> di bawah.
+          Tekan tombol <span className="font-extrabold text-navy-primary bg-gold-accent/25 px-2 py-0.5 rounded border border-gold-accent/40">PILIH</span> pada kandidat untuk langsung merekam suara Anda.
         </p>
       </motion.div>
 
-      {/* Grid of 3 Candidates: Exactly 3 equal slots */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-stretch min-h-0 py-1">
-        {candidates.map((candidate) => (
-          <div key={candidate.id} className="h-full">
-            <CandidateCard
-              candidate={candidate}
-              isSelected={selectedCandidate?.id === candidate.id}
-              onSelect={onSelectCandidate}
-            />
+      {/* Submission Error Banner with Safe Retry Option */}
+      {submissionError && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-3 p-3.5 sm:p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 text-rose-900 shrink-0"
+        >
+          <div className="flex items-center gap-3 text-left w-full sm:w-auto">
+            <div className="w-10 h-10 rounded-xl bg-rose-200/80 text-rose-700 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
+            </div>
+            <div>
+              <p className="font-extrabold text-sm sm:text-base text-rose-950">
+                Gagal Menyimpan Suara
+              </p>
+              <p className="text-xs sm:text-sm text-rose-800 line-clamp-2">
+                {submissionError}
+              </p>
+              <p className="text-[11px] text-rose-700/90 mt-0.5">
+                ID transaksi dipertahankan untuk keamanan suara. Silakan tekan tombol Coba Lagi di samping.
+              </p>
+            </div>
           </div>
-        ))}
+
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={onCancelSession}
+              disabled={isSubmitting}
+              className="text-xs sm:text-sm border-rose-300 text-rose-900 hover:bg-rose-100"
+            >
+              Batalkan
+            </Button>
+            <Button
+              type="button"
+              variant="primary-gold"
+              size="md"
+              isLoading={isSubmitting}
+              leftIcon={<RefreshCw className="w-4 h-4" />}
+              onClick={onRetry}
+              className="text-xs sm:text-sm font-extrabold shadow-md px-5"
+            >
+              Coba Lagi
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Grid of 3 Candidates: Exactly 3 equal slots, optimized for tablet landscape */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 items-stretch min-h-0 py-1">
+        {candidates.map((candidate) => {
+          const isSelected = selectedCandidate?.id === candidate.id;
+          // While submitting, all cards are disabled
+          // If there is an unresolved error, only the previously chosen candidate is allowed to retry
+          const isCardDisabled = isSubmitting || (!!submissionError && !isSelected);
+
+          return (
+            <div key={candidate.id} className="h-full">
+              <CandidateCard
+                candidate={candidate}
+                isSelected={isSelected}
+                isSubmitting={isSubmitting}
+                disabled={isCardDisabled}
+                onSelect={onSelectCandidate}
+              />
+            </div>
+          );
+        })}
       </div>
 
-      {/* Bottom Sticky Action Bar */}
+      {/* Bottom Bar: Status & Cancellation */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-4 pt-3 border-t border-slate-200/80 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white/60 backdrop-blur-sm p-3 rounded-2xl"
+        className="mt-3 pt-2 border-t border-slate-200/80 shrink-0 flex items-center justify-between gap-3 bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-2xl"
       >
         {/* Left: Cancellation / Reset button */}
         <button
           type="button"
           onClick={onCancelSession}
-          className="min-h-[48px] px-5 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold text-sm flex items-center gap-2 transition-colors touch-manipulation"
+          disabled={isSubmitting}
+          className="min-h-[44px] px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors touch-manipulation"
         >
           <RotateCcw className="w-4 h-4 text-slate-500" />
           <span>Batalkan Sesi</span>
         </button>
 
-        {/* Center / Status Indicator */}
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-500">
-          {selectedCandidate ? (
-            <span className="text-navy-primary font-bold flex items-center gap-1.5 bg-gold-accent/15 px-3 py-1.5 rounded-lg border border-gold-accent/30">
-              Pilihan: No. {String(selectedCandidate.candidate_number).padStart(2, '0')} - {selectedCandidate.name}
+        {/* Center / Right: Dynamic status text */}
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600">
+          {isSubmitting ? (
+            <span className="flex items-center gap-2 text-navy-primary font-bold bg-gold-accent/20 px-3.5 py-1.5 rounded-xl border border-gold-accent/40 animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin text-navy-primary" />
+              Menyimpan suara ke server...
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-slate-500">
-              <AlertCircle className="w-4 h-4 text-amber-500" />
-              Belum ada kandidat yang dipilih
+            <span className="text-slate-500 text-xs hidden sm:inline">
+              Ketuk tombol PILIH pada foto kandidat di atas
             </span>
           )}
-        </div>
-
-        {/* Right: Proceed Button */}
-        <div className="w-full sm:w-auto">
-          <Button
-            variant="primary-gold"
-            size="lg"
-            fullWidth
-            disabled={!selectedCandidate}
-            rightIcon={<ArrowRight className="w-5 h-5 stroke-[2.5]" />}
-            onClick={onProceedToConfirmation}
-            className="w-full sm:w-auto px-8 py-3.5 text-base sm:text-lg font-extrabold shadow-lg"
-          >
-            LANJUTKAN KE KONFIRMASI
-          </Button>
         </div>
       </motion.div>
     </div>

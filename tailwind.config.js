@@ -7,21 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
+        primary: '#1C1C1E',
+        darkGrey: '#1C1C1E',
         navy: {
-          900: '#0B1324',
-          primary: '#101D35',
-          secondary: '#24344E',
-          surface: '#1A2942',
-          light: '#2E4162',
+          900: '#141416',
+          primary: '#1C1C1E',
+          secondary: '#2C2C2E',
+          surface: '#242426',
+          light: '#3A3A3C',
         },
         gold: {
+          DEFAULT: '#D4AF37',
           50: '#FDFBF7',
-          100: '#F8F3E6',
-          200: '#EEDEB8',
-          accent: '#C9A45C',
-          light: '#DFBF7A',
-          dark: '#9F7E3B',
-          glow: 'rgba(201, 164, 92, 0.25)',
+          100: '#F9F5EB',
+          200: '#EFE5C6',
+          accent: '#D4AF37',
+          light: '#E5C158',
+          dark: '#B08D23',
+          glow: 'rgba(212, 175, 55, 0.25)',
         },
         slate: {
           kiosk: '#F3F5F9',
