@@ -74,6 +74,13 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     void fetchInitialData();
 
+    // Polling fallback to guarantee instant sync across multiple devices (mobile/desktop)
+    const pollInterval = setInterval(() => {
+      if (active) {
+        void fetchInitialData();
+      }
+    }, 2500);
+
     if (isSupabaseConfigured) {
       const unsubElection = electionRepository.subscribeToElectionChanges(election.id, () => {
         void fetchInitialData();
@@ -85,6 +92,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return () => {
         active = false;
+        clearInterval(pollInterval);
         unsubElection();
         unsubCandidates();
       };
@@ -92,6 +100,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     return () => {
       active = false;
+      clearInterval(pollInterval);
     };
   }, [election.id]);
 

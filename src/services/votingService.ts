@@ -26,8 +26,22 @@ export class VotingService {
         if (!isUuid) {
           const numMatch = candidateId.match(/\d+/);
           const num = numMatch ? parseInt(numMatch[0], 10) : 1;
-          const hexNum = String(num).padStart(2, '0');
-          targetUuid = `00000000-0000-0000-0000-0000000000${hexNum}`;
+          
+          // Cari ID asli dari Supabase berdasarkan candidate_number
+          try {
+            const { data: cData } = await supabase
+              .from('candidates')
+              .select('id')
+              .eq('candidate_number', num)
+              .maybeSingle();
+            if (cData?.id) {
+              targetUuid = cData.id;
+            } else {
+              targetUuid = `00000000-0000-0000-0000-00000000001${num}`;
+            }
+          } catch {
+            targetUuid = `00000000-0000-0000-0000-00000000001${num}`;
+          }
         }
 
         const { data, error } = await supabase.rpc('submit_vote', {

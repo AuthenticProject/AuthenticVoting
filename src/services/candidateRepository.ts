@@ -121,20 +121,19 @@ export class CandidateRepository {
   /**
    * Subscribes to real-time candidate updates
    */
-  subscribeToCandidateChanges(electionId: string, onChange: () => void): () => void {
+  subscribeToCandidateChanges(_electionId: string, onChange: () => void): () => void {
     if (!isSupabaseConfigured || !supabase) {
       return () => {};
     }
 
     const channel = supabase
-      .channel(`candidates-${electionId}`)
+      .channel('candidates-changes-global')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'candidates',
-          filter: `election_id=eq.${electionId}`,
         },
         () => {
           onChange();

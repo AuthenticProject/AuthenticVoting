@@ -174,20 +174,19 @@ export class ElectionRepository {
   /**
    * Subscribes to real-time status changes
    */
-  subscribeToElectionChanges(electionId: string, onChange: (election: Partial<Election>) => void): () => void {
+  subscribeToElectionChanges(_electionId: string, onChange: (election: Partial<Election>) => void): () => void {
     if (!isSupabaseConfigured || !supabase) {
       return () => {};
     }
 
     const channel = supabase
-      .channel(`election-${electionId}`)
+      .channel('election-changes-global')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'elections',
-          filter: `id=eq.${electionId}`,
         },
         (payload) => {
           if (payload.new) {
