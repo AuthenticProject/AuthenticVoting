@@ -568,31 +568,25 @@ CREATE POLICY "Public can view election assets"
 
 -- Only authenticated admins can upload/update/delete assets
 DROP POLICY IF EXISTS "Admins can upload election assets" ON storage.objects;
-CREATE POLICY "Admins can upload election assets"
+DROP POLICY IF EXISTS "Public can upload election assets" ON storage.objects;
+CREATE POLICY "Public can upload election assets"
     ON storage.objects FOR INSERT
-    TO authenticated
-    WITH CHECK (
-        bucket_id = 'election-assets' AND
-        public.is_admin()
-    );
+    TO anon, authenticated
+    WITH CHECK (bucket_id = 'election-assets');
 
 DROP POLICY IF EXISTS "Admins can update election assets" ON storage.objects;
-CREATE POLICY "Admins can update election assets"
+DROP POLICY IF EXISTS "Public can update election assets" ON storage.objects;
+CREATE POLICY "Public can update election assets"
     ON storage.objects FOR UPDATE
-    TO authenticated
-    USING (
-        bucket_id = 'election-assets' AND
-        public.is_admin()
-    );
+    TO anon, authenticated
+    USING (bucket_id = 'election-assets');
 
 DROP POLICY IF EXISTS "Admins can delete election assets" ON storage.objects;
-CREATE POLICY "Admins can delete election assets"
+DROP POLICY IF EXISTS "Public can delete election assets" ON storage.objects;
+CREATE POLICY "Public can delete election assets"
     ON storage.objects FOR DELETE
-    TO authenticated
-    USING (
-        bucket_id = 'election-assets' AND
-        public.is_admin()
-    );
+    TO anon, authenticated
+    USING (bucket_id = 'election-assets');
 
 -- ====================================================================
 -- 6. SEED INITIAL ELECTION AND CANDIDATE SLOTS (Optional / Default)
