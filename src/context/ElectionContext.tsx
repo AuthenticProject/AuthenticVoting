@@ -29,14 +29,9 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setCandidates(cands);
 
       const votes = await resultsRepository.getAdminTotalVotes(el.id);
-      setTotalVotes(votes);
-
-      if (el.status === 'closed') {
-        const res = await resultsRepository.getFinalResults(el.id);
-        setResults(res);
-      } else {
-        setResults(null);
-      }
+      const liveRes = await resultsRepository.getLiveResults(el.id, cands);
+      setResults(liveRes);
+      setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
     } catch (err) {
       console.warn('Error refreshing election data:', err);
     }
@@ -57,16 +52,10 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCandidates(cands);
 
         const votes = await resultsRepository.getAdminTotalVotes(el.id);
+        const liveRes = await resultsRepository.getLiveResults(el.id, cands);
         if (!active) return;
-        setTotalVotes(votes);
-
-        if (el.status === 'closed') {
-          const res = await resultsRepository.getFinalResults(el.id);
-          if (!active) return;
-          setResults(res);
-        } else {
-          setResults(null);
-        }
+        setResults(liveRes);
+        setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
       } catch (err) {
         console.warn('Error fetching initial election data:', err);
       }
@@ -79,7 +68,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (active) {
         void fetchInitialData();
       }
-    }, 2500);
+    }, 2000);
 
     if (isSupabaseConfigured) {
       const unsubElection = electionRepository.subscribeToElectionChanges(election.id, () => {
@@ -90,11 +79,16 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         void fetchInitialData();
       });
 
+      const unsubVotes = resultsRepository.subscribeToVotesChanges(() => {
+        void fetchInitialData();
+      });
+
       return () => {
         active = false;
         clearInterval(pollInterval);
         unsubElection();
         unsubCandidates();
+        unsubVotes();
       };
     }
 

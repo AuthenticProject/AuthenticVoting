@@ -7,7 +7,6 @@ import {
   Tv,
   CheckCircle2,
   Scale,
-  ShieldCheck,
   ArrowRight,
   FileDown,
   FileSpreadsheet,
@@ -64,8 +63,8 @@ export const AdminResultsPage: React.FC = () => {
     setTimeout(() => setExportNotice(null), 4000);
   };
 
-  // 1. LOCKED STATE (DRAFT or ACTIVE)
-  if (!isClosed || !results) {
+  // 1. LOCKED / WAITING STATE (When results not yet available)
+  if (!results) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-full max-w-xl bg-white rounded-3xl p-8 sm:p-12 border border-slate-200/80 shadow-card flex flex-col items-center">
@@ -74,25 +73,15 @@ export const AdminResultsPage: React.FC = () => {
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider mb-3">
-            Status: {election.status === 'draft' ? 'Voting Belum Dimulai' : 'Voting Sedang Berlangsung'}
+            Status: {election.status === 'draft' ? 'Voting Belum Dimulai (Draft)' : 'Menghubungkan ke Server...'}
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-primary">
-            Hasil Pemilihan Masih Terkunci
+            {election.status === 'draft' ? 'Pemilihan Belum Dimulai' : 'Memuat Data Hasil Real-Time...'}
           </h2>
           <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-md leading-relaxed">
-            Hasil pemilihan hanya dapat dilihat setelah voting resmi ditutup oleh panitia administrator.
+            Data grafik dan perolehan suara akan otomatis muncul dan aktif secara real-time saat voting dibuka di Dashboard.
           </p>
-
-          <div className="mt-6 w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-left space-y-1.5">
-            <div className="font-bold text-navy-primary flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-gold-dark" />
-              <span>Standar Kerahasiaan Pemilihan Elektronik:</span>
-            </div>
-            <p>• Suara per kandidat, peringkat, dan persentase tidak dapat diakses.</p>
-            <p>• Total suara masuk saat ini: <strong>{totalVotes} suara</strong> (hanya agregat global).</p>
-            <p>• Ekspor PDF dan Excel dinonaktifkan sebelum pemilihan ditutup.</p>
-          </div>
 
           <Link to="/admin" className="mt-8">
             <Button
@@ -108,25 +97,50 @@ export const AdminResultsPage: React.FC = () => {
     );
   }
 
-  // 2. UNLOCKED FINAL RESULTS STATE (CLOSED)
-  const isTie = results.isTie;
-  const isZero = results.isZeroVotes;
-  const winners = results.winners;
+  // 2. RESULTS STATE (ACTIVE LIVE MONITORING OR CLOSED FINAL)
+  const isTie = results?.isTie ?? false;
+  const isZero = results?.isZeroVotes ?? true;
+  const winners = results?.winners ?? [];
 
   return (
     <div className="space-y-6">
+      {/* Live Active Monitoring Banner */}
+      {!isClosed && (
+        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <span className="relative flex h-4 w-4 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500" />
+            </span>
+            <div>
+              <h4 className="font-extrabold text-emerald-950 text-base sm:text-lg flex items-center gap-2">
+                <span>Monitoring Hasil Real-Time Aktif</span>
+              </h4>
+              <p className="text-xs sm:text-sm text-emerald-800 mt-0.5">
+                Perolehan suara tiap kandidat di bawah diperbarui secara otomatis setiap ada pemilih yang memberikan suara di bilik tanpa perlu refresh.
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 px-3.5 py-1.5 rounded-full bg-emerald-200/90 text-emerald-950 font-black text-xs uppercase tracking-wider border border-emerald-300">
+            LIVE SYNC ({totalVotes} Suara)
+          </span>
+        </div>
+      )}
+
       {/* Top Banner & Export Actions */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 ${
+            isClosed ? 'bg-emerald-100 text-emerald-800' : 'bg-gold-accent/20 text-navy-primary border border-gold-accent/40'
+          }`}>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Hasil Akhir Resmi — Pemilihan Telah Ditutup</span>
+            <span>{isClosed ? 'Hasil Akhir Resmi — Pemilihan Telah Ditutup' : 'Tabulasi Suara Masuk Sementara (Live)'}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-primary leading-tight">
             Rekapitulasi Suara & Tabulasi Hasil
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            {results.electionTitle || election.title}
+            {results?.electionTitle || election.title}
           </p>
         </div>
 

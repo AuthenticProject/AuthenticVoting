@@ -11,9 +11,9 @@ import {
   ShieldAlert,
   ArrowRight,
   ExternalLink,
-  Lock,
   Database,
   RotateCcw,
+  Trophy,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
@@ -21,7 +21,9 @@ import { Button } from '../../components/common/Button';
 export const AdminOverviewPage: React.FC = () => {
   const {
     election,
+    candidates,
     totalVotes,
+    results,
     isLiveDatabase,
     startElection,
     closeElection,
@@ -31,6 +33,26 @@ export const AdminOverviewPage: React.FC = () => {
   const [showStartModal, setShowStartModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+
+  // Calculate live per-candidate vote counts and percentages
+  const candidateResults = candidates.map((cand) => {
+    const res = results?.candidateResults?.find(
+      (r) => r.candidate.id === cand.id || r.candidate.candidate_number === cand.candidate_number
+    );
+    const voteCount = res ? res.voteCount : 0;
+    const percentage = res
+      ? res.percentage
+      : totalVotes > 0
+      ? Number(((voteCount / totalVotes) * 100).toFixed(1))
+      : 0;
+    const isWinner = res ? res.isWinner : false;
+    return {
+      candidate: cand,
+      voteCount,
+      percentage,
+      isWinner,
+    };
+  });
 
   const formatDate = (isoString?: string | null) => {
     if (!isoString) return '-';
@@ -234,16 +256,118 @@ export const AdminOverviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Privacy Notice Card */}
-      <div className="bg-navy-primary/5 rounded-2xl p-5 border border-navy-primary/10 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-navy-primary text-gold-accent flex items-center justify-center shrink-0 mt-0.5">
-          <Lock className="w-5 h-5" />
+      {/* LIVE CANDIDATE TALLIES (REAL-TIME SUARA KANDIDAT) */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-navy-primary">
+                Perolehan Suara Kandidat Real-Time
+              </h3>
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Diperbarui secara langsung setiap kali ada suara masuk dari bilik suara tanpa perlu refresh.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live Auto-Sync</span>
+            </span>
+            <Link
+              to="/admin/results"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-navy-primary hover:text-gold-dark transition-colors ml-2"
+            >
+              <span>Grafik Lengkap</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
-        <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-          <span className="font-bold text-navy-primary block text-sm mb-0.5">
-            Kerahasiaan Hasil Pemilihan Terjamin
-          </span>
-          Sesuai aturan ketat pemungutan suara resmi, rincian perolehan suara per kandidat dan peringkat tidak akan ditampilkan kepada siapa pun (termasuk administrator) selama voting berstatus Draft atau Aktif. Tabulasi lengkap hanya dapat dibuka setelah status pemilihan resmi diubah menjadi <strong>Ditutup</strong>.
+
+        {/* Candidate Vote Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {candidateResults.map(({ candidate, voteCount, percentage, isWinner }) => (
+            <div
+              key={candidate.id}
+              className={`rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+                isWinner && totalVotes > 0
+                  ? 'bg-gradient-to-br from-amber-50/80 to-white border-gold-accent shadow-md shadow-gold-accent/10'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300'
+              }`}
+            >
+              {/* Leader Badge */}
+              {isWinner && totalVotes > 0 && (
+                <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-accent text-navy-primary font-black text-[10px] uppercase tracking-wider shadow-sm">
+                  <Trophy className="w-3 h-3 text-navy-primary" />
+                  <span>Memimpin</span>
+                </div>
+              )}
+
+              <div>
+                {/* Candidate Header with Photo and Number */}
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="relative">
+                    <img
+                      src={candidate.photo_url || '/logo.png'}
+                      alt={candidate.name}
+                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-white shadow-sm"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/logo.png';
+                      }}
+                    />
+                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-navy-primary text-gold-accent font-extrabold text-xs flex items-center justify-center border-2 border-white shadow-sm">
+                      {candidate.candidate_number}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">
+                      Kandidat #{candidate.candidate_number}
+                    </span>
+                    <h4 className="font-extrabold text-navy-primary text-sm sm:text-base truncate leading-snug">
+                      {candidate.name}
+                    </h4>
+                    <p className="text-xs text-slate-600 truncate mt-0.5">
+                      {candidate.title_or_role || 'Calon Jendral'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Vote Counter Display */}
+                <div className="flex items-baseline justify-between mb-2">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-3xl sm:text-4xl font-black text-navy-primary tracking-tight">
+                      {voteCount}
+                    </span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-600">
+                      Suara
+                    </span>
+                  </div>
+                  <span className="text-base sm:text-lg font-extrabold text-gold-dark">
+                    {percentage}%
+                  </span>
+                </div>
+
+                {/* Animated Percentage Bar */}
+                <div className="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${Math.max(percentage, voteCount > 0 ? 3 : 0)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600 font-medium">
+                <span>Total keseluruhan</span>
+                <span className="font-bold text-slate-700">{totalVotes} suara masuk</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
