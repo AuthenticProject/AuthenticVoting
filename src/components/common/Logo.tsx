@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import defaultOfficialLogo from '../../assets/logo.png';
 
 interface LogoProps {
   src?: string | null;
@@ -8,12 +9,20 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({
-  src = '/logo.png',
+  src,
   alt = 'Lambang Resmi Pemilihan',
   className = '',
   size = 'md',
 }) => {
-  const activeSrc = src && src.trim() !== '' ? src : '/logo.png';
+  // If no custom uploaded logo or if it references default/legacy paths, use the bundled official logo.png
+  const isDefaultOrLegacy =
+    !src ||
+    src.trim() === '' ||
+    src === '/logo.png' ||
+    src === '/assets/logo.png' ||
+    src === '/assets/logo-garuda.svg';
+
+  const activeSrc = isDefaultOrLegacy ? defaultOfficialLogo : src;
   const [prevSrc, setPrevSrc] = useState(activeSrc);
   const [imgError, setImgError] = useState(false);
 
