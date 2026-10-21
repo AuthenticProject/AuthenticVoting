@@ -20,14 +20,26 @@ export class VotingService {
     // 1. Coba simpan ke Supabase jika tersedia
     if (isSupabaseConfigured && supabase) {
       try {
+        // Pastikan candidateId yang dikirim ke Supabase berformat UUID yang valid
+        let targetUuid = candidateId;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId);
+        if (!isUuid) {
+          const numMatch = candidateId.match(/\d+/);
+          const num = numMatch ? parseInt(numMatch[0], 10) : 1;
+          const hexNum = String(num).padStart(2, '0');
+          targetUuid = `00000000-0000-0000-0000-0000000000${hexNum}`;
+        }
+
         const { data, error } = await supabase.rpc('submit_vote', {
-          p_candidate_id: candidateId,
+          p_candidate_id: targetUuid,
           p_request_id: requestId,
           p_kiosk_token: kioskToken || null,
         });
 
         if (!error && data) {
           const res = data as { success: boolean; message: string; idempotent?: boolean };
+          // Catat juga ke cache lokal untuk konsistensi sesi tablet
+          mockElectionService.recordVote(candidateId, requestId);
           return {
             success: res.success ?? true,
             message: res.message || 'Suara berhasil dicatat ke database.',

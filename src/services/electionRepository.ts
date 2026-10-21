@@ -24,14 +24,21 @@ export class ElectionRepository {
         if (data) {
           const local = mockElectionService.getElection();
           const isLegacySupabaseTitle = data.title === 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN';
+
+          // Sinkronkan status Supabase ke state lokal agar perangkat kedua langsung mendeteksi status aktif
+          const currentStatus = data.status || local.status;
+          if (local.status !== currentStatus) {
+            mockElectionService.setElectionStatus(currentStatus);
+          }
+
           return {
             id: data.id,
             title: isLegacySupabaseTitle ? local.title : (local.title || data.title),
             subtitle: isLegacySupabaseTitle ? local.subtitle : (local.subtitle ?? (data.subtitle || '')),
             logo_url: local.logo_url || (data.logo_url || '/logo.png'),
-            status: local.status,
-            started_at: local.started_at,
-            closed_at: local.closed_at,
+            status: currentStatus,
+            started_at: data.started_at || local.started_at,
+            closed_at: data.closed_at || local.closed_at,
             created_at: data.created_at,
             updated_at: data.updated_at,
           };
@@ -75,13 +82,23 @@ export class ElectionRepository {
   }
 
   /**
-   * Start election (transitions DRAFT -> ACTIVE via RPC)
+   * Start election (transitions DRAFT -> ACTIVE via RPC & direct update for multi-device sync)
    */
   async startElection(electionId: string): Promise<{ success: boolean; error?: string }> {
     mockElectionService.startElection();
 
     if (isSupabaseConfigured && supabase) {
       try {
+        // Update langsung ke tabel elections agar semua perangkat realtime membaca 'active'
+        await supabase
+          .from('elections')
+          .update({
+            status: 'active',
+            started_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', electionId);
+
         const { error } = await supabase.rpc('start_election', {
           p_election_id: electionId,
         });
@@ -98,13 +115,22 @@ export class ElectionRepository {
   }
 
   /**
-   * Close election (transitions ACTIVE -> CLOSED via RPC)
+   * Close election (transitions ACTIVE -> CLOSED via RPC & direct update)
    */
   async closeElection(electionId: string): Promise<{ success: boolean; error?: string }> {
     mockElectionService.closeElection();
 
     if (isSupabaseConfigured && supabase) {
       try {
+        await supabase
+          .from('elections')
+          .update({
+            status: 'closed',
+            closed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', electionId);
+
         const { error } = await supabase.rpc('close_election', {
           p_election_id: electionId,
         });
@@ -114,6 +140,31 @@ export class ElectionRepository {
         }
       } catch (err) {
         console.warn('Kendala close_election Supabase:', err);
+      }
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Reset election to DRAFT
+   */
+  async resetToDraft(electionId: string): Promise<{ success: boolean; error?: string }> {
+    mockElectionService.resetToDraft();
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase
+          .from('elections')
+          .update({
+            status: 'draft',
+            started_at: null,
+            closed_at: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', electionId);
+      } catch (err) {
+        console.warn('Kendala resetToDraft Supabase:', err);
       }
     }
 

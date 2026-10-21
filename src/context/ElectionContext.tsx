@@ -154,14 +154,14 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   const resetToDraft = useCallback(async () => {
-    mockElectionService.resetToDraft();
+    await electionRepository.resetToDraft(election.id);
     await refreshData();
-  }, [refreshData]);
+  }, [election.id, refreshData]);
 
-  const resetAllToDefault = useCallback(() => {
-    mockElectionService.resetToDefault();
-    refreshData();
-  }, [refreshData]);
+  const resetAllToDefault = useCallback(async () => {
+    await electionRepository.resetToDraft(election.id);
+    await refreshData();
+  }, [election.id, refreshData]);
 
   const isSettingsLocked = election.status !== 'draft';
   const isCandidatesLocked = election.status !== 'draft';
