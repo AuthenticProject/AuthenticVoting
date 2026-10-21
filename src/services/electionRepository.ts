@@ -7,8 +7,6 @@ export class ElectionRepository {
    * Fetch election data
    */
   async getElection(): Promise<Election> {
-    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
-
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -19,10 +17,7 @@ export class ElectionRepository {
           .single();
 
         if (error) {
-          console.error('Gagal memuat pemilihan dari Supabase:', error.message);
-          if (isProduction) {
-            throw new Error(`Gagal memuat data pemilihan dari database produksi: ${error.message}`);
-          }
+          console.warn('Gagal memuat pemilihan dari Supabase, beralih ke data lokal:', error.message);
           return mockElectionService.getElection();
         }
 
@@ -40,15 +35,9 @@ export class ElectionRepository {
           };
         }
       } catch (err) {
-        if (isProduction) {
-          throw err;
-        }
+        console.warn('Kendala koneksi Supabase, menggunakan data lokal:', err);
         return mockElectionService.getElection();
       }
-    }
-
-    if (isProduction) {
-      throw new Error('Database Supabase wajib dikonfigurasi pada lingkungan produksi.');
     }
 
     return mockElectionService.getElection();

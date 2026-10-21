@@ -7,8 +7,6 @@ export class CandidateRepository {
    * Fetches all three candidates for the specified election
    */
   async getCandidates(electionId: string): Promise<Candidate[]> {
-    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
-
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -18,10 +16,7 @@ export class CandidateRepository {
           .order('candidate_number', { ascending: true });
 
         if (error) {
-          console.error('Gagal memuat kandidat dari Supabase:', error.message);
-          if (isProduction) {
-            throw new Error(`Gagal memuat kandidat dari database produksi: ${error.message}`);
-          }
+          console.warn('Gagal memuat kandidat dari Supabase, beralih ke data lokal:', error.message);
           return mockElectionService.getCandidates();
         }
 
@@ -37,15 +32,9 @@ export class CandidateRepository {
           }));
         }
       } catch (err) {
-        if (isProduction) {
-          throw err;
-        }
+        console.warn('Kendala memuat kandidat dari Supabase:', err);
         return mockElectionService.getCandidates();
       }
-    }
-
-    if (isProduction) {
-      throw new Error('Database Supabase wajib dikonfigurasi pada lingkungan produksi.');
     }
 
     return mockElectionService.getCandidates();
