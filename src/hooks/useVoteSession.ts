@@ -53,8 +53,8 @@ export const useVoteSession = () => {
     }
 
     try {
-      // Simulate subtle network latency to ensure visual feedback & disable double submissions
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Minimal visual feedback latency
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const result = await recordVote(candidate.id, currentRequestId);
 
@@ -77,7 +77,16 @@ export const useVoteSession = () => {
     await submitCandidateVote(selectedCandidate);
   }, [selectedCandidate, isSubmitting, submitCandidateVote]);
 
-  // Reset session back to welcome screen (called after success auto-return or manual cancel)
+  // Reset session for next voter in queue: keeps the kiosk on candidate selection screen
+  const nextVoter = useCallback(() => {
+    setSelectedCandidate(null);
+    setRequestId(generateRequestId());
+    setIsSubmitting(false);
+    setSubmissionError(null);
+    setCurrentStep('selection');
+  }, []);
+
+  // Full reset back to welcome screen (called on manual cancel or if election closed)
   const resetSession = useCallback(() => {
     setSelectedCandidate(null);
     setRequestId('');
@@ -85,6 +94,17 @@ export const useVoteSession = () => {
     setSubmissionError(null);
     setCurrentStep('welcome');
   }, []);
+
+  // Auto-advance to candidate selection screen when election is active
+  useState(() => {
+    if (election.status === 'active') {
+      setSelectedCandidate(null);
+      setSubmissionError(null);
+      setIsSubmitting(false);
+      setRequestId(generateRequestId());
+      setCurrentStep('selection');
+    }
+  });
 
   // Toggle election status for QA / testing screen states
   const toggleElectionStatusForTesting = useCallback((status: Election['status']) => {
@@ -102,6 +122,7 @@ export const useVoteSession = () => {
     startVoting,
     submitCandidateVote,
     retryVote,
+    nextVoter,
     resetSession,
     toggleElectionStatusForTesting,
   };

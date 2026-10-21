@@ -9,12 +9,12 @@ interface SuccessScreenProps {
 
 export const SuccessScreen: React.FC<SuccessScreenProps> = ({
   onFinish,
-  autoReturnSeconds = 2,
+  autoReturnSeconds = 1,
 }) => {
   const [secondsRemaining, setSecondsRemaining] = useState(autoReturnSeconds);
 
   useEffect(() => {
-    // Exact timer for auto-returning to welcome screen
+    // Exact timer for auto-advancing to next voter in queue
     const timer = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
@@ -86,7 +86,7 @@ export const SuccessScreen: React.FC<SuccessScreenProps> = ({
         {/* Auto Return Countdown & Progress Bar */}
         <div className="w-full mt-2 flex flex-col items-center gap-3">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
-            <span>Kembali ke layar utama dalam</span>
+            <span>Siap untuk pemilih berikutnya dalam</span>
             <span className="font-extrabold text-navy-primary bg-gold-accent/20 px-2.5 py-0.5 rounded-md border border-gold-accent/40">
               {secondsRemaining} detik
             </span>

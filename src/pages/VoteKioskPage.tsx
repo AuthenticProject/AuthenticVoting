@@ -17,6 +17,7 @@ export const VoteKioskPage: React.FC = () => {
     startVoting,
     submitCandidateVote,
     retryVote,
+    nextVoter,
     resetSession,
     toggleElectionStatusForTesting,
   } = useVoteSession();
@@ -35,7 +36,7 @@ export const VoteKioskPage: React.FC = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
             className="h-full w-full flex flex-col"
           >
             <WelcomeScreen
@@ -51,7 +52,7 @@ export const VoteKioskPage: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
             className="h-full w-full flex flex-col"
           >
             <CandidateSelectionScreen
@@ -61,7 +62,7 @@ export const VoteKioskPage: React.FC = () => {
               submissionError={submissionError}
               onSelectCandidate={submitCandidateVote}
               onRetry={retryVote}
-              onCancelSession={resetSession}
+              onCancelSession={nextVoter}
             />
           </motion.div>
         )}
@@ -69,15 +70,15 @@ export const VoteKioskPage: React.FC = () => {
         {currentStep === 'success' && (
           <motion.div
             key="step-success"
-            initial={{ opacity: 0, scale: 0.92 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.92 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
             className="h-full w-full flex flex-col"
           >
             <SuccessScreen
-              onFinish={resetSession}
-              autoReturnSeconds={2}
+              onFinish={nextVoter}
+              autoReturnSeconds={1}
             />
           </motion.div>
         )}
