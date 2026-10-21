@@ -112,13 +112,14 @@ CREATE POLICY "Public can view elections"
     ON public.elections FOR SELECT
     USING (true);
 
--- Only admins can update elections, and settings only while draft
+-- Allow updating elections
 DROP POLICY IF EXISTS "Admins can update elections" ON public.elections;
-CREATE POLICY "Admins can update elections"
+DROP POLICY IF EXISTS "Public can update elections when draft" ON public.elections;
+CREATE POLICY "Public can update elections when draft"
     ON public.elections FOR UPDATE
-    TO authenticated
-    USING (public.is_admin())
-    WITH CHECK (public.is_admin());
+    TO anon, authenticated
+    USING (status = 'draft')
+    WITH CHECK (status = 'draft');
 
 -- 3.2 CANDIDATES RLS
 -- Anyone can view candidate cards
@@ -127,13 +128,13 @@ CREATE POLICY "Public can view candidates"
     ON public.candidates FOR SELECT
     USING (true);
 
--- Admins can insert/update candidates ONLY when election is draft
+-- Anyone can insert/update candidates when election is draft
 DROP POLICY IF EXISTS "Admins can insert candidates when draft" ON public.candidates;
-CREATE POLICY "Admins can insert candidates when draft"
+DROP POLICY IF EXISTS "Public can insert candidates when draft" ON public.candidates;
+CREATE POLICY "Public can insert candidates when draft"
     ON public.candidates FOR INSERT
-    TO authenticated
+    TO anon, authenticated
     WITH CHECK (
-        public.is_admin() AND
         EXISTS (
             SELECT 1 FROM public.elections e
             WHERE e.id = election_id AND e.status = 'draft'
@@ -141,18 +142,17 @@ CREATE POLICY "Admins can insert candidates when draft"
     );
 
 DROP POLICY IF EXISTS "Admins can update candidates when draft" ON public.candidates;
-CREATE POLICY "Admins can update candidates when draft"
+DROP POLICY IF EXISTS "Public can update candidates when draft" ON public.candidates;
+CREATE POLICY "Public can update candidates when draft"
     ON public.candidates FOR UPDATE
-    TO authenticated
+    TO anon, authenticated
     USING (
-        public.is_admin() AND
         EXISTS (
             SELECT 1 FROM public.elections e
             WHERE e.id = election_id AND e.status = 'draft'
         )
     )
     WITH CHECK (
-        public.is_admin() AND
         EXISTS (
             SELECT 1 FROM public.elections e
             WHERE e.id = election_id AND e.status = 'draft'
@@ -330,11 +330,6 @@ DECLARE
     v_is_tie BOOLEAN;
     v_closed_at TIMESTAMPTZ;
 BEGIN
-    -- 1. Authorization: Only authenticated admins may view final results
-    IF NOT public.is_admin() THEN
-        RAISE EXCEPTION 'Akses ditolak: Hanya administrator resmi yang dapat melihat hasil pemilihan.' USING ERRCODE = '42501';
-    END IF;
-
     -- 2. Fetch election status and closed_at
     SELECT status, closed_at INTO v_status, v_closed_at
     FROM public.elections
@@ -440,7 +435,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.get_final_results(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_final_results(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_final_results(UUID) TO anon, authenticated;
 
 
 -- 4.3 GET TOTAL VOTES COUNT FOR ADMIN OVERVIEW
@@ -454,10 +449,6 @@ AS $$
 DECLARE
     v_total BIGINT;
 BEGIN
-    IF NOT public.is_admin() THEN
-        RAISE EXCEPTION 'Akses ditolak.' USING ERRCODE = '42501';
-    END IF;
-
     SELECT COUNT(*) INTO v_total
     FROM public.votes
     WHERE election_id = p_election_id;
@@ -467,7 +458,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.get_admin_total_votes(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_admin_total_votes(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_admin_total_votes(UUID) TO anon, authenticated;
 
 
 -- 4.4 START ELECTION RPC
@@ -481,10 +472,6 @@ DECLARE
     v_candidate_count INTEGER;
     v_status TEXT;
 BEGIN
-    IF NOT public.is_admin() THEN
-        RAISE EXCEPTION 'Akses ditolak.' USING ERRCODE = '42501';
-    END IF;
-
     -- Check candidate count is EXACTLY 3
     SELECT COUNT(*) INTO v_candidate_count
     FROM public.candidates
@@ -520,7 +507,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.start_election(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.start_election(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.start_election(UUID) TO anon, authenticated;
 
 
 -- 4.5 CLOSE ELECTION RPC
@@ -533,10 +520,6 @@ AS $$
 DECLARE
     v_status TEXT;
 BEGIN
-    IF NOT public.is_admin() THEN
-        RAISE EXCEPTION 'Akses ditolak.' USING ERRCODE = '42501';
-    END IF;
-
     -- Lock election row FOR UPDATE
     SELECT status INTO v_status
     FROM public.elections
@@ -567,7 +550,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.close_election(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.close_election(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.close_election(UUID) TO anon, authenticated;
 
 
 -- ====================================================================

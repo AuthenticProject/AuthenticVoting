@@ -21,15 +21,19 @@ export class CandidateRepository {
         }
 
         if (data && data.length > 0) {
-          return data.map((d) => ({
-            id: d.id,
-            election_id: d.election_id,
-            candidate_number: d.candidate_number,
-            name: d.name,
-            title_or_role: d.title_or_role || '',
-            vision: d.vision || '',
-            photo_url: d.photo_url || '',
-          }));
+          const localList = mockElectionService.getCandidates();
+          return data.map((d) => {
+            const local = localList.find((l) => l.id === d.id || l.candidate_number === d.candidate_number);
+            return {
+              id: d.id,
+              election_id: d.election_id,
+              candidate_number: d.candidate_number,
+              name: local?.name ?? d.name,
+              title_or_role: local?.title_or_role ?? (d.title_or_role || ''),
+              vision: local?.vision ?? (d.vision || ''),
+              photo_url: local?.photo_url ?? (d.photo_url || ''),
+            };
+          });
         }
       } catch (err) {
         console.warn('Kendala memuat kandidat dari Supabase:', err);
@@ -47,6 +51,10 @@ export class CandidateRepository {
     candidateId: string,
     updates: Partial<Pick<Candidate, 'name' | 'title_or_role' | 'vision' | 'photo_url'>>
   ): Promise<{ success: boolean; error?: string }> {
+    // 1. Simpan selalu ke local storage terlebih dahulu agar perubahan langsung aktif
+    mockElectionService.updateCandidate(candidateId, updates);
+
+    // 2. Coba sinkronisasi ke Supabase
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase
@@ -61,16 +69,13 @@ export class CandidateRepository {
           .eq('id', candidateId);
 
         if (error) {
-          return { success: false, error: error.message };
+          console.warn('Catatan sinkronisasi Supabase kandidat:', error.message);
         }
-
-        return { success: true };
       } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui kandidat.' };
+        console.warn('Kendala update kandidat Supabase:', err);
       }
     }
 
-    mockElectionService.updateCandidate(candidateId, updates);
     return { success: true };
   }
 

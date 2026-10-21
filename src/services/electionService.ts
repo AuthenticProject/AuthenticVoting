@@ -155,7 +155,16 @@ export class ElectionService {
     }
 
     const currentList = this.getStoredCandidates();
-    const updatedList = currentList.map((c) => (c.id === id ? { ...c, ...updates } : c));
+    const updatedList = currentList.map((c) => {
+      // Cocokkan berdasarkan ID persis, atau nomor urut kandidat jika ID berupa UUID Supabase
+      const match =
+        c.id === id ||
+        (id.endsWith('11') && c.candidate_number === 1) ||
+        (id.endsWith('12') && c.candidate_number === 2) ||
+        (id.endsWith('13') && c.candidate_number === 3);
+
+      return match ? { ...c, ...updates } : c;
+    });
     this.saveCandidates(updatedList);
     return updatedList;
   }

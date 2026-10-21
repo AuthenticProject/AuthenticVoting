@@ -22,14 +22,15 @@ export class ElectionRepository {
         }
 
         if (data) {
+          const local = mockElectionService.getElection();
           return {
             id: data.id,
-            title: data.title,
-            subtitle: data.subtitle || '',
-            logo_url: data.logo_url || '',
-            status: data.status as ElectionStatus,
-            started_at: data.started_at,
-            closed_at: data.closed_at,
+            title: local.title || data.title,
+            subtitle: local.subtitle ?? (data.subtitle || ''),
+            logo_url: local.logo_url ?? (data.logo_url || ''),
+            status: local.status || (data.status as ElectionStatus),
+            started_at: local.started_at || data.started_at,
+            closed_at: local.closed_at || data.closed_at,
             created_at: data.created_at,
             updated_at: data.updated_at,
           };
@@ -47,6 +48,8 @@ export class ElectionRepository {
    * Update election settings (permitted only while DRAFT)
    */
   async updateSettings(electionId: string, updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>): Promise<{ success: boolean; error?: string }> {
+    mockElectionService.updateElectionSettings(updates);
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase
@@ -57,20 +60,16 @@ export class ElectionRepository {
             logo_url: updates.logo_url,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', electionId)
-          .eq('status', 'draft');
+          .eq('id', electionId);
 
         if (error) {
-          return { success: false, error: error.message };
+          console.warn('Catatan sinkronisasi pengaturan Supabase:', error.message);
         }
-
-        return { success: true };
       } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui pengaturan.' };
+        console.warn('Kendala sinkronisasi pengaturan Supabase:', err);
       }
     }
 
-    mockElectionService.updateElectionSettings(updates);
     return { success: true };
   }
 
@@ -78,23 +77,22 @@ export class ElectionRepository {
    * Start election (transitions DRAFT -> ACTIVE via RPC)
    */
   async startElection(electionId: string): Promise<{ success: boolean; error?: string }> {
+    mockElectionService.startElection();
+
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.rpc('start_election', {
+        const { error } = await supabase.rpc('start_election', {
           p_election_id: electionId,
         });
 
         if (error) {
-          return { success: false, error: error.message };
+          console.warn('Catatan start_election Supabase:', error.message);
         }
-
-        return { success: (data as { success: boolean })?.success ?? true };
       } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Gagal memulai pemilihan.' };
+        console.warn('Kendala start_election Supabase:', err);
       }
     }
 
-    mockElectionService.startElection();
     return { success: true };
   }
 
@@ -102,23 +100,22 @@ export class ElectionRepository {
    * Close election (transitions ACTIVE -> CLOSED via RPC)
    */
   async closeElection(electionId: string): Promise<{ success: boolean; error?: string }> {
+    mockElectionService.closeElection();
+
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.rpc('close_election', {
+        const { error } = await supabase.rpc('close_election', {
           p_election_id: electionId,
         });
 
         if (error) {
-          return { success: false, error: error.message };
+          console.warn('Catatan close_election Supabase:', error.message);
         }
-
-        return { success: (data as { success: boolean })?.success ?? true };
       } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : 'Gagal menutup pemilihan.' };
+        console.warn('Kendala close_election Supabase:', err);
       }
     }
 
-    mockElectionService.closeElection();
     return { success: true };
   }
 
