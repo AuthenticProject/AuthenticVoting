@@ -23,9 +23,17 @@ export class ElectionService {
       const data = safeStorage.getItem(ELECTION_KEY);
       if (data) {
         const election = JSON.parse(data);
+        let changed = false;
         if (election.title === 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN') {
           election.title = 'Pemilihan jendral 5102';
           election.subtitle = 'Pondok Modern Darussalam Gontor';
+          changed = true;
+        }
+        if (!election.logo_url || election.logo_url === '/assets/logo-garuda.svg') {
+          election.logo_url = '/logo.png';
+          changed = true;
+        }
+        if (changed) {
           this.saveElection(election);
         }
         return election;

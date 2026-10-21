@@ -8,16 +8,17 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({
-  src,
+  src = '/logo.png',
   alt = 'Lambang Resmi Pemilihan',
   className = '',
   size = 'md',
 }) => {
-  const [prevSrc, setPrevSrc] = useState(src);
+  const activeSrc = src && src.trim() !== '' ? src : '/logo.png';
+  const [prevSrc, setPrevSrc] = useState(activeSrc);
   const [imgError, setImgError] = useState(false);
 
-  if (prevSrc !== src) {
-    setPrevSrc(src);
+  if (prevSrc !== activeSrc) {
+    setPrevSrc(activeSrc);
     setImgError(false);
   }
 
@@ -29,11 +30,11 @@ export const Logo: React.FC<LogoProps> = ({
   };
 
   // If a valid custom logo URL is provided and has not errored, render the image
-  if (src && src.trim() !== '' && !imgError) {
+  if (activeSrc && !imgError) {
     return (
       <div className={`relative flex items-center justify-center shrink-0 ${sizeMap[size]} ${className}`}>
         <img
-          src={src}
+          src={activeSrc}
           alt={alt}
           onError={() => setImgError(true)}
           className="w-full h-full object-contain drop-shadow-md rounded-xl"

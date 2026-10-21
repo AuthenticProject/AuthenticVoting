@@ -28,7 +28,7 @@ export class ElectionRepository {
             id: data.id,
             title: isLegacySupabaseTitle ? local.title : (local.title || data.title),
             subtitle: isLegacySupabaseTitle ? local.subtitle : (local.subtitle ?? (data.subtitle || '')),
-            logo_url: local.logo_url ?? (data.logo_url || ''),
+            logo_url: local.logo_url || (data.logo_url || '/logo.png'),
             status: local.status,
             started_at: local.started_at,
             closed_at: local.closed_at,
