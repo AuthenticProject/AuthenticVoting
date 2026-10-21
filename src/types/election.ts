@@ -29,3 +29,33 @@ export interface VoteSubmissionPayload {
   candidate_id: string;
   request_id: string;
 }
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'super_admin' | 'election_officer';
+}
+
+export interface CandidateResult {
+  candidate: Candidate;
+  voteCount: number;
+  percentage: number;
+  isWinner: boolean;
+  isTied: boolean;
+}
+
+export interface ElectionResultsSummary {
+  totalVotes: number;
+  candidateResults: CandidateResult[];
+  isTie: boolean;
+  winners: Candidate[];
+  closedAt: string | null;
+}
+
+export interface AuditLog {
+  id: string;
+  action: string;
+  details: string;
+  timestamp: string;
+}

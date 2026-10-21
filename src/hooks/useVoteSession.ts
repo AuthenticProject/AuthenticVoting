@@ -1,10 +1,15 @@
 import { useState, useCallback } from 'react';
 import type { Candidate, Election, KioskStep } from '../types/election';
-import { MOCK_CANDIDATES, MOCK_ELECTION } from '../lib/mockData';
+import { useElection } from './useElection';
 
 export const useVoteSession = () => {
-  const [election, setElection] = useState<Election>(MOCK_ELECTION);
-  const [candidates] = useState<Candidate[]>(MOCK_CANDIDATES);
+  const {
+    election,
+    candidates,
+    recordVote,
+    setElectionStatusForDev,
+  } = useElection();
+
   const [currentStep, setCurrentStep] = useState<KioskStep>('welcome');
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [requestId, setRequestId] = useState<string>('');
@@ -56,7 +61,7 @@ export const useVoteSession = () => {
     setCurrentStep('welcome');
   }, []);
 
-  // Submit vote (In Phase 1: Client flow verification without requiring Supabase credentials)
+  // Submit vote with double-submission protection and requestId idempotency
   const submitVote = useCallback(async () => {
     if (!selectedCandidate || isSubmitting) return;
 
@@ -65,26 +70,24 @@ export const useVoteSession = () => {
 
     try {
       // Simulate network request latency to test loading UI & disable double submissions
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // Successfully processed in Phase 1 client flow
+      // Record vote via shared election service
+      recordVote(selectedCandidate.id, requestId);
+
+      // Successfully processed in voting flow
       setCurrentStep('success');
     } catch {
-      setSubmissionError('Terjadi kendala jaringan saat merekam suara. ID sesi tetap tersimpan untuk dicoba kembali.');
+      setSubmissionError('Terjadi kendala saat merekam suara. ID sesi tetap tersimpan untuk dicoba kembali.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedCandidate, isSubmitting]);
+  }, [selectedCandidate, isSubmitting, recordVote, requestId]);
 
   // Toggle election status for QA / testing screen states
   const toggleElectionStatusForTesting = useCallback((status: Election['status']) => {
-    setElection((prev) => ({
-      ...prev,
-      status,
-      started_at: status === 'active' ? new Date().toISOString() : prev.started_at,
-      closed_at: status === 'closed' ? new Date().toISOString() : null,
-    }));
-  }, []);
+    setElectionStatusForDev(status);
+  }, [setElectionStatusForDev]);
 
   return {
     election,
