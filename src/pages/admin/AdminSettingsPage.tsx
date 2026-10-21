@@ -135,7 +135,7 @@ export const AdminSettingsPage: React.FC = () => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 disabled={isSettingsLocked}
-                placeholder="Contoh: PEMILIHAN JENDRAL & DEWAN KEHORMATAN"
+                placeholder="Contoh: Pemilihan jendral 5102"
                 className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-navy-primary focus:ring-2 focus:ring-navy-primary/20 text-sm font-bold outline-none disabled:bg-slate-50 disabled:text-slate-500"
                 required
               />

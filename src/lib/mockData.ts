@@ -2,8 +2,8 @@ import type { Candidate, Election } from '../types/election';
 
 export const MOCK_ELECTION: Election = {
   id: 'el-mubes-2026',
-  title: 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN',
-  subtitle: 'Musyawarah Akbar Nasional Periode 2026 – 2031',
+  title: 'Pemilihan jendral 5102',
+  subtitle: 'Pondok Modern Darussalam Gontor',
   logo_url: '/assets/logo-garuda.svg',
   status: 'draft',
   started_at: null,

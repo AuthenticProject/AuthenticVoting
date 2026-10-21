@@ -23,10 +23,11 @@ export class ElectionRepository {
 
         if (data) {
           const local = mockElectionService.getElection();
+          const isLegacySupabaseTitle = data.title === 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN';
           return {
             id: data.id,
-            title: local.title || data.title,
-            subtitle: local.subtitle ?? (data.subtitle || ''),
+            title: isLegacySupabaseTitle ? local.title : (local.title || data.title),
+            subtitle: isLegacySupabaseTitle ? local.subtitle : (local.subtitle ?? (data.subtitle || '')),
             logo_url: local.logo_url ?? (data.logo_url || ''),
             status: local.status,
             started_at: local.started_at,

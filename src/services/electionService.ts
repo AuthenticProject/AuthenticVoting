@@ -21,7 +21,15 @@ export class ElectionService {
   private getStoredElection(): Election {
     try {
       const data = safeStorage.getItem(ELECTION_KEY);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const election = JSON.parse(data);
+        if (election.title === 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN') {
+          election.title = 'Pemilihan jendral 5102';
+          election.subtitle = 'Pondok Modern Darussalam Gontor';
+          this.saveElection(election);
+        }
+        return election;
+      }
     } catch {
       // fallback
     }

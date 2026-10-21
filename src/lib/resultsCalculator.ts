@@ -19,7 +19,7 @@ export function calculateElectionResults(
   totalVotes: number,
   closedAt: string | null = null,
   startedAt: string | null = null,
-  electionTitle: string = 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN'
+  electionTitle: string = 'Pemilihan jendral 5102'
 ): ElectionResultsSummary {
   const isZeroVotes = totalVotes === 0;
 
