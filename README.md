@@ -88,3 +88,4 @@ Aplikasi pemungutan suara elektronik (*E-Voting Kiosk*) berbasis web yang elegan
    ```
 
 Lihat [SETUP.md](./SETUP.md) untuk konfigurasi Supabase lengkap dan [EVENT_CHECKLIST.md](./EVENT_CHECKLIST.md) untuk panduan hari acara.
+# AuthenticVoting
