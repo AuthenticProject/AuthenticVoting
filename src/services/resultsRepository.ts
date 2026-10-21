@@ -33,6 +33,8 @@ export class ResultsRepository {
    * STRICT: Backend rejects request if election is NOT closed!
    */
   async getFinalResults(electionId: string): Promise<ElectionResultsSummary | null> {
+    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.rpc('get_final_results', {
@@ -48,6 +50,10 @@ export class ResultsRepository {
       } catch {
         return null;
       }
+    }
+
+    if (isProduction) {
+      return null;
     }
 
     return mockElectionService.getResults();

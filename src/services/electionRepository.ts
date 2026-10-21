@@ -7,6 +7,8 @@ export class ElectionRepository {
    * Fetch election data
    */
   async getElection(): Promise<Election> {
+    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -16,25 +18,37 @@ export class ElectionRepository {
           .limit(1)
           .single();
 
-        if (error || !data) {
-          console.warn('Gagal memuat pemilihan dari Supabase:', error?.message);
+        if (error) {
+          console.error('Gagal memuat pemilihan dari Supabase:', error.message);
+          if (isProduction) {
+            throw new Error(`Gagal memuat data pemilihan dari database produksi: ${error.message}`);
+          }
           return mockElectionService.getElection();
         }
 
-        return {
-          id: data.id,
-          title: data.title,
-          subtitle: data.subtitle || '',
-          logo_url: data.logo_url || '',
-          status: data.status as ElectionStatus,
-          started_at: data.started_at,
-          closed_at: data.closed_at,
-          created_at: data.created_at,
-          updated_at: data.updated_at,
-        };
-      } catch {
+        if (data) {
+          return {
+            id: data.id,
+            title: data.title,
+            subtitle: data.subtitle || '',
+            logo_url: data.logo_url || '',
+            status: data.status as ElectionStatus,
+            started_at: data.started_at,
+            closed_at: data.closed_at,
+            created_at: data.created_at,
+            updated_at: data.updated_at,
+          };
+        }
+      } catch (err) {
+        if (isProduction) {
+          throw err;
+        }
         return mockElectionService.getElection();
       }
+    }
+
+    if (isProduction) {
+      throw new Error('Database Supabase wajib dikonfigurasi pada lingkungan produksi.');
     }
 
     return mockElectionService.getElection();

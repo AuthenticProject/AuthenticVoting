@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, LogOut, UserCircle } from 'lucide-react';
+import { isSupabaseConfigured } from '../../lib/supabaseClient';
 import { useAuth } from '../../hooks/useAuth';
 import { useElection } from '../../hooks/useElection';
 
@@ -44,6 +45,15 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({ onToggleSidebar, title
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor}`}>
               {statusLabel}
             </span>
+            {isSupabaseConfigured ? (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300">
+                Supabase Terhubung
+              </span>
+            ) : (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border bg-amber-50 text-amber-800 border-amber-300">
+                Mode Demo (Mock Data)
+              </span>
+            )}
           </div>
         </div>
       </div>

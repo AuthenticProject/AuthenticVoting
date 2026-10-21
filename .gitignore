@@ -22,6 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
- 
+
+# Export artifacts
 *.xlsx
 *.pdf
+
+# Environment files (Never commit secrets to git)
+.env
+.env.*
+!.env.example

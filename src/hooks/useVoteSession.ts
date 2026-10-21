@@ -73,13 +73,13 @@ export const useVoteSession = () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       // Record vote via shared election service
-      const success = await recordVote(selectedCandidate.id, requestId);
+      const result = await recordVote(selectedCandidate.id, requestId);
 
-      if (success) {
+      if (result.success) {
         // Successfully processed in voting flow
         setCurrentStep('success');
       } else {
-        setSubmissionError('Gagal mencatat suara ke database. Sesi tetap tersimpan, silakan tekan Coba Lagi.');
+        setSubmissionError(result.message || 'Gagal mencatat suara ke database. Sesi tetap tersimpan, silakan tekan Coba Lagi.');
       }
     } catch {
       setSubmissionError('Terjadi kendala saat merekam suara. ID sesi tetap tersimpan untuk dicoba kembali.');

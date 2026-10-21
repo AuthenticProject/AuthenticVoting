@@ -7,6 +7,8 @@ export class CandidateRepository {
    * Fetches all three candidates for the specified election
    */
   async getCandidates(electionId: string): Promise<Candidate[]> {
+    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -15,23 +17,35 @@ export class CandidateRepository {
           .eq('election_id', electionId)
           .order('candidate_number', { ascending: true });
 
-        if (error || !data || data.length === 0) {
-          console.warn('Gagal memuat kandidat dari Supabase:', error?.message);
+        if (error) {
+          console.error('Gagal memuat kandidat dari Supabase:', error.message);
+          if (isProduction) {
+            throw new Error(`Gagal memuat kandidat dari database produksi: ${error.message}`);
+          }
           return mockElectionService.getCandidates();
         }
 
-        return data.map((d) => ({
-          id: d.id,
-          election_id: d.election_id,
-          candidate_number: d.candidate_number,
-          name: d.name,
-          title_or_role: d.title_or_role || '',
-          vision: d.vision || '',
-          photo_url: d.photo_url || '',
-        }));
-      } catch {
+        if (data && data.length > 0) {
+          return data.map((d) => ({
+            id: d.id,
+            election_id: d.election_id,
+            candidate_number: d.candidate_number,
+            name: d.name,
+            title_or_role: d.title_or_role || '',
+            vision: d.vision || '',
+            photo_url: d.photo_url || '',
+          }));
+        }
+      } catch (err) {
+        if (isProduction) {
+          throw err;
+        }
         return mockElectionService.getCandidates();
       }
+    }
+
+    if (isProduction) {
+      throw new Error('Database Supabase wajib dikonfigurasi pada lingkungan produksi.');
     }
 
     return mockElectionService.getCandidates();

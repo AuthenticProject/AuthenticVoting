@@ -35,6 +35,8 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
     }
   };
 
+  const isDev = !(typeof import.meta !== 'undefined' && import.meta.env?.PROD);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden flex flex-col bg-institutional-light">
       {/* Kiosk Header */}
@@ -52,7 +54,7 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
 
       {/* Discreet QA & Fullscreen Kiosk Toolbar (Discrete in corner, non-intrusive for kiosk operators) */}
       <div className="absolute bottom-2 right-2 z-50 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity">
-        {showDevControls && onStatusChange && (
+        {isDev && showDevControls && onStatusChange && (
           <div className="flex items-center gap-1.5 bg-navy-primary/95 text-white p-1.5 rounded-xl text-[11px] shadow-lg border border-navy-light/40 backdrop-blur-md">
             <span className="text-gold-light font-bold px-1.5">Status:</span>
             <button
@@ -82,7 +84,7 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
           </div>
         )}
 
-        {onStatusChange && (
+        {isDev && onStatusChange && (
           <button
             onClick={() => setShowDevControls(!showDevControls)}
             title="Pengaturan Mode Pengujian Status Acara"

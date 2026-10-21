@@ -19,7 +19,7 @@ export interface ElectionContextType {
   setElectionStatusForDev: (status: ElectionStatus) => Promise<void>;
   updateCandidate: (id: string, updates: Partial<Candidate>) => Promise<void>;
   updateSettings: (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => Promise<void>;
-  recordVote: (candidateId: string, requestId: string) => Promise<boolean>;
+  recordVote: (candidateId: string, requestId: string) => Promise<{ success: boolean; message: string; error?: string }>;
   refreshData: () => Promise<void>;
   resetAllToDefault: () => void;
 }

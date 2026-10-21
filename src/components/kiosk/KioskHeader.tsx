@@ -1,6 +1,7 @@
 import React from 'react';
 import { Logo } from '../common/Logo';
-import { ShieldCheck } from 'lucide-react';
+import { isSupabaseConfigured } from '../../lib/supabaseClient';
+import { ShieldCheck, AlertCircle } from 'lucide-react';
 import type { KioskStep } from '../../types/election';
 
 interface KioskHeaderProps {
@@ -28,6 +29,12 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({
                 <ShieldCheck className="w-3 h-3 text-gold-accent" />
                 Resmi
               </span>
+              {!isSupabaseConfigured && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/40">
+                  <AlertCircle className="w-3 h-3 text-amber-300" />
+                  Mode Demo
+                </span>
+              )}
             </h1>
             <p className="text-xs text-slate-300 font-medium hidden sm:block truncate max-w-xl">
               {subtitle}

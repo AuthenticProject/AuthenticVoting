@@ -16,6 +16,7 @@ export class VotingService {
    */
   async submitVote(candidateId: string, requestId: string): Promise<VoteSubmissionResult> {
     const kioskToken = kioskSessionService.getKioskToken();
+    const isProduction = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
 
     // 1. Live Supabase Backend Submission
     if (isSupabaseConfigured && supabase) {
@@ -49,7 +50,16 @@ export class VotingService {
       }
     }
 
-    // 2. Local Fallback Mode (When Supabase credentials are not yet set in .env)
+    // 2. Strict Production Guard: In production, mock voting is completely disabled!
+    if (isProduction) {
+      return {
+        success: false,
+        message: 'Konfigurasi database server Supabase belum terpasang di lingkungan produksi. Pemungutan suara ditangguhkan demi integritas data.',
+        error: 'PRODUCTION_DATABASE_REQUIRED',
+      };
+    }
+
+    // 3. Isolated Development Mock Mode (Local UI inspection only)
     try {
       mockElectionService.recordVote(candidateId, requestId);
       return {

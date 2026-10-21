@@ -174,18 +174,31 @@ export class ElectionService {
       throw new Error('Voting sedang tidak aktif atau telah ditutup.');
     }
 
-    // Check request_id uniqueness
-    let processed: string[] = [];
+    // Check request_id uniqueness & candidate consistency
+    let processedMap: Record<string, string> = {};
     try {
       const stored = safeStorage.getItem(PROCESSED_REQUESTS_KEY);
-      if (stored) processed = JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((id) => {
+            processedMap[id] = candidateId;
+          });
+        } else if (typeof parsed === 'object' && parsed !== null) {
+          processedMap = parsed;
+        }
+      }
     } catch {
-      processed = [];
+      processedMap = {};
     }
 
-    if (processed.includes(requestId)) {
-      // Idempotent: already recorded, do not duplicate
-      return true;
+    if (processedMap[requestId]) {
+      if (processedMap[requestId] === candidateId) {
+        // Idempotent: already recorded for this exact candidate, do not duplicate
+        return true;
+      }
+      // Reused request ID with a different candidate must be rejected
+      throw new Error('ID Request telah digunakan untuk kandidat berbeda.');
     }
 
     // Increment tally
@@ -195,9 +208,9 @@ export class ElectionService {
     this.saveTally(tally);
 
     // Mark requestId as processed
-    processed.push(requestId);
+    processedMap[requestId] = candidateId;
     try {
-      safeStorage.setItem(PROCESSED_REQUESTS_KEY, JSON.stringify(processed));
+      safeStorage.setItem(PROCESSED_REQUESTS_KEY, JSON.stringify(processedMap));
     } catch {
       // ignore
     }

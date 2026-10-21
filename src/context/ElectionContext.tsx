@@ -127,13 +127,12 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   const recordVote = useCallback(
-    async (candidateId: string, requestId: string): Promise<boolean> => {
+    async (candidateId: string, requestId: string): Promise<{ success: boolean; message: string; error?: string }> => {
       const res = await votingService.submitVote(candidateId, requestId);
       if (res.success) {
         await refreshData();
-        return true;
       }
-      return false;
+      return res;
     },
     [refreshData]
   );
