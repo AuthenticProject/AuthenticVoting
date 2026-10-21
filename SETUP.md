@@ -51,11 +51,10 @@ npm install
    - Pastikan opsi *Auto Confirm User* dicentang.
 3. Buka **SQL Editor** dan daftarkan UUID pengguna tersebut ke tabel `admin_users`:
    ```sql
-   INSERT INTO public.admin_users (auth_user_id, full_name, role)
+   INSERT INTO public.admin_users (auth_user_id, role)
    VALUES (
      'PASTE-USER-UUID-DARI-AUTH-DISINI',
-     'Panitia Pemilihan Jendral',
-     'superadmin'
+     'super_admin'
    );
    ```
 
