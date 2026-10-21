@@ -40,7 +40,7 @@ export const AdminSettingsPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, logo_url: url }));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSettingsLocked) return;
 
@@ -49,15 +49,19 @@ export const AdminSettingsPage: React.FC = () => {
       return;
     }
 
-    updateSettings({
-      title: formData.title.trim(),
-      subtitle: formData.subtitle.trim(),
-      logo_url: formData.logo_url,
-    });
+    try {
+      await updateSettings({
+        title: formData.title.trim(),
+        subtitle: formData.subtitle.trim(),
+        logo_url: formData.logo_url,
+      });
 
-    setSuccessMessage('Pengaturan acara berhasil diperbarui dan diterapkan ke Bilik Suara Kiosk.');
-    setValidationError(null);
-    setTimeout(() => setSuccessMessage(null), 4000);
+      setSuccessMessage('Pengaturan acara berhasil diperbarui dan diterapkan ke Bilik Suara Kiosk.');
+      setValidationError(null);
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : 'Gagal menyimpan pengaturan.');
+    }
   };
 
   return (

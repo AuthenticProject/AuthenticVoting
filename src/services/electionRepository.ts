@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
-import type { Election, ElectionStatus } from '../types/election';
+import type { Election } from '../types/election';
 import { electionService as mockElectionService } from './electionService';
 
 export class ElectionRepository {
@@ -28,9 +28,9 @@ export class ElectionRepository {
             title: local.title || data.title,
             subtitle: local.subtitle ?? (data.subtitle || ''),
             logo_url: local.logo_url ?? (data.logo_url || ''),
-            status: local.status || (data.status as ElectionStatus),
-            started_at: local.started_at || data.started_at,
-            closed_at: local.closed_at || data.closed_at,
+            status: local.status,
+            started_at: local.started_at,
+            closed_at: local.closed_at,
             created_at: data.created_at,
             updated_at: data.updated_at,
           };

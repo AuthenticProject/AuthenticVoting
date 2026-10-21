@@ -5,11 +5,11 @@ export const MOCK_ELECTION: Election = {
   title: 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN',
   subtitle: 'Musyawarah Akbar Nasional Periode 2026 – 2031',
   logo_url: '/assets/logo-garuda.svg',
-  status: 'active',
-  started_at: '2026-10-21T08:00:00Z',
+  status: 'draft',
+  started_at: null,
   closed_at: null,
   created_at: '2026-10-20T00:00:00Z',
-  updated_at: '2026-10-21T08:00:00Z',
+  updated_at: '2026-10-20T00:00:00Z',
 };
 
 export const MOCK_CANDIDATES: Candidate[] = [

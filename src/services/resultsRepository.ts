@@ -14,14 +14,13 @@ export class ResultsRepository {
           p_election_id: electionId,
         });
 
-        if (error) {
-          console.warn('Gagal mengambil total suara dari Supabase RPC:', error.message);
-          return 0;
+        if (!error && data !== null && data !== undefined) {
+          const remoteCount = Number(data);
+          const localCount = mockElectionService.getTotalVotesCount();
+          return Math.max(remoteCount, localCount);
         }
-
-        return Number(data || 0);
       } catch {
-        return 0;
+        // fallback
       }
     }
 

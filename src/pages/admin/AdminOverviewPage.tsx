@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Lock,
   Database,
+  RotateCcw,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
@@ -24,6 +25,7 @@ export const AdminOverviewPage: React.FC = () => {
     isLiveDatabase,
     startElection,
     closeElection,
+    resetAllToDefault,
   } = useElection();
 
   const [showStartModal, setShowStartModal] = useState(false);
@@ -134,6 +136,20 @@ export const AdminOverviewPage: React.FC = () => {
               </Button>
             </Link>
           )}
+
+          <Button
+            variant="secondary"
+            size="lg"
+            leftIcon={<RotateCcw className="w-4 h-4 text-slate-500" />}
+            onClick={() => {
+              if (window.confirm('Reset status pemilihan ke DRAFT? Suara akan dikosongkan dan data kandidat dapat diedit kembali.')) {
+                resetAllToDefault();
+              }
+            }}
+            title="Kembalikan status ke DRAFT & reset suara"
+          >
+            Reset ke Draft
+          </Button>
 
           <Link
             to="/vote"

@@ -61,7 +61,7 @@ export const AdminCandidatesPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, photo_url: url }));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCandidate) return;
 
@@ -70,16 +70,20 @@ export const AdminCandidatesPage: React.FC = () => {
       return;
     }
 
-    updateCandidate(editingCandidate.id, {
-      name: formData.name.trim(),
-      title_or_role: formData.title_or_role.trim(),
-      vision: formData.vision.trim(),
-      photo_url: formData.photo_url || editingCandidate.photo_url,
-    });
+    try {
+      await updateCandidate(editingCandidate.id, {
+        name: formData.name.trim(),
+        title_or_role: formData.title_or_role.trim(),
+        vision: formData.vision.trim(),
+        photo_url: formData.photo_url || editingCandidate.photo_url,
+      });
 
-    setSuccessNotice(`Data Kandidat 0${editingCandidate.candidate_number} berhasil diperbarui.`);
-    setTimeout(() => setSuccessNotice(null), 4000);
-    handleCloseModal();
+      setSuccessNotice(`Data Kandidat 0${editingCandidate.candidate_number} berhasil diperbarui.`);
+      setTimeout(() => setSuccessNotice(null), 4000);
+      handleCloseModal();
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : 'Gagal memperbarui data kandidat.');
+    }
   };
 
   return (
