@@ -336,23 +336,29 @@ export const AdminCandidatesPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Photo Area */}
-              <div className="w-full aspect-[4/4] bg-slate-100 overflow-hidden relative">
-                {candidate.photo_url ? (
-                  <img
-                    src={candidate.photo_url}
-                    alt={candidate.name}
-                    className="w-full h-full object-cover object-top"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
-                    <User className="w-16 h-16 stroke-[1.5]" />
-                    <span className="text-xs font-semibold mt-1">Belum Ada Foto</span>
+              {/* Photo Area with Postage Stamp Frame */}
+              <div className="p-4 bg-slate-50/70 flex items-center justify-center">
+                <div className="stamp-frame w-full max-w-[260px]">
+                  <div className="stamp-border p-2 bg-white">
+                    <div className="w-full aspect-[4/4] bg-slate-100 overflow-hidden relative stamp-inner-border">
+                      {candidate.photo_url ? (
+                        <img
+                          src={candidate.photo_url}
+                          alt={candidate.name}
+                          className="w-full h-full object-cover object-top"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
+                          <User className="w-16 h-16 stroke-[1.5]" />
+                          <span className="text-xs font-semibold mt-1">Belum Ada Foto</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Information */}

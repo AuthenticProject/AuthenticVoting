@@ -311,16 +311,20 @@ export const AdminOverviewPage: React.FC = () => {
               <div>
                 {/* Candidate Header with Photo and Number */}
                 <div className="flex items-center gap-3.5 mb-4">
-                  <div className="relative">
-                    <img
-                      src={candidate.photo_url || '/logo.png'}
-                      alt={candidate.name}
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-white shadow-sm"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = '/logo.png';
-                      }}
-                    />
-                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-navy-primary text-gold-accent font-extrabold text-xs flex items-center justify-center border-2 border-white shadow-sm">
+                  <div className="relative shrink-0">
+                    <div className="stamp-frame p-1">
+                      <div className="stamp-border p-1 bg-white">
+                        <img
+                          src={candidate.photo_url || '/logo.png'}
+                          alt={candidate.name}
+                          className="w-12 h-12 sm:w-14 sm:h-14 object-cover object-top border border-amber-300/60"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/logo.png';
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-navy-primary text-gold-accent font-extrabold text-[10px] flex items-center justify-center border border-white shadow-xs z-10">
                       {candidate.candidate_number}
                     </span>
                   </div>

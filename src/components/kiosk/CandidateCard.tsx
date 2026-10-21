@@ -97,29 +97,48 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         )}
       </div>
 
-      {/* Candidate Photo Section - Responsive Aspect Ratio */}
-      <div className="relative w-full aspect-[4/4.2] sm:aspect-[4/3.8] bg-slate-100 overflow-hidden flex items-center justify-center">
-        {!imgError ? (
-          <img
-            src={candidate.photo_url}
-            alt={candidate.name}
-            onError={() => setImgError(true)}
-            className={`w-full h-full object-cover object-top transition-transform duration-300 ${
-              isSelected ? 'scale-105' : 'hover:scale-102'
-            }`}
-            loading="eager"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-4">
-            <User className="w-20 h-20 text-slate-400 mb-2 stroke-[1.5]" />
-            <span className="text-xs font-medium text-slate-600">Foto Resmi</span>
-          </div>
-        )}
+      {/* Candidate Photo Section - Commemorative Postage Stamp Frame (Bingkai Prangko) */}
+      <div className="p-3 sm:p-4 bg-slate-50/70 flex items-center justify-center">
+        <div className="stamp-frame w-full max-w-[280px]">
+          <div className="stamp-border p-2 bg-white">
+            <div className="relative w-full aspect-[4/4.2] sm:aspect-[4/3.9] bg-slate-100 overflow-hidden flex items-center justify-center stamp-inner-border">
+              {!imgError ? (
+                <img
+                  src={candidate.photo_url}
+                  alt={candidate.name}
+                  onError={() => setImgError(true)}
+                  className={`w-full h-full object-cover object-top transition-transform duration-300 ${
+                    isSelected ? 'scale-105' : 'hover:scale-102'
+                  }`}
+                  loading="eager"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-4">
+                  <User className="w-16 h-16 text-slate-400 mb-2 stroke-[1.5]" />
+                  <span className="text-xs font-medium text-slate-600">Foto Resmi</span>
+                </div>
+              )}
 
-        {/* Selection / Submitting Overlay Tint */}
-        {isSelected && (
-          <div className="absolute inset-0 bg-gold-accent/10 border-b-2 border-gold-accent/40" />
-        )}
+              {/* Commemorative Postmark Seal (Cap Pos Prangko) */}
+              <div className="absolute top-2 right-2 pointer-events-none select-none opacity-80">
+                <div className="w-11 h-11 rounded-full border-2 border-dashed border-gold-dark/80 flex flex-col items-center justify-center text-[7px] font-black text-navy-primary -rotate-12 bg-white/50 backdrop-blur-[2px] shadow-xs">
+                  <span className="tracking-tighter">RESMI</span>
+                  <span className="text-[6px] text-gold-dark font-extrabold tracking-widest">5102</span>
+                </div>
+              </div>
+
+              {/* Stamp Denomination Tag */}
+              <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-navy-primary/90 text-gold-accent font-black text-[9px] sm:text-[10px] tracking-wider uppercase border border-gold-accent/40 shadow-xs backdrop-blur-xs">
+                KANDIDAT #{formattedNumber}
+              </div>
+
+              {/* Selection / Submitting Overlay Tint */}
+              {isSelected && (
+                <div className="absolute inset-0 bg-gold-accent/15 border-2 border-gold-accent" />
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Candidate Information & Large PILIH Button */}

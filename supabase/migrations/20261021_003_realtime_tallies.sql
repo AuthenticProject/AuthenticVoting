@@ -3,11 +3,17 @@
 -- Jalankan skrip ini di: Supabase Dashboard -> SQL Editor -> Tekan "RUN"
 -- ====================================================================
 
--- 1. Buka izin SELECT pada tabel votes agar perolehan suara terbaca real-time
+-- 1. Buka izin SELECT & DELETE pada tabel votes agar perolehan suara terbaca real-time dan bisa direset
 DROP POLICY IF EXISTS "No public read access to votes" ON public.votes;
 DROP POLICY IF EXISTS "Allow read votes for admin tally" ON public.votes;
 CREATE POLICY "Allow read votes for admin tally"
     ON public.votes FOR SELECT
+    TO anon, authenticated
+    USING (true);
+
+DROP POLICY IF EXISTS "Allow delete votes on reset" ON public.votes;
+CREATE POLICY "Allow delete votes on reset"
+    ON public.votes FOR DELETE
     TO anon, authenticated
     USING (true);
 

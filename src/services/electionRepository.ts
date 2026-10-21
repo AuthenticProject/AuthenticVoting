@@ -150,10 +150,22 @@ export class ElectionRepository {
    * Reset election to DRAFT
    */
   async resetToDraft(electionId: string): Promise<{ success: boolean; error?: string }> {
+    // 1. Reset storage & tally lokal ke 0
     mockElectionService.resetToDraft();
 
     if (isSupabaseConfigured && supabase) {
       try {
+        // 2. Coba panggil RPC reset_to_draft Supabase (menghapus votes & update election ke draft)
+        await supabase.rpc('reset_to_draft', { p_election_id: electionId });
+      } catch (err) {
+        console.warn('Kendala RPC reset_to_draft Supabase:', err);
+      }
+
+      try {
+        // 3. Hapus seluruh data suara di tabel votes di Supabase agar kembali ke 0
+        await supabase.from('votes').delete().eq('election_id', electionId);
+
+        // 4. Reset status pemilihan ke DRAFT dan hapus started_at/closed_at
         await supabase
           .from('elections')
           .update({

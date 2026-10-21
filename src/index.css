@@ -60,3 +60,39 @@
 .border-gold-glow {
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5), 0 10px 25px -5px rgba(212, 175, 55, 0.3);
 }
+
+/* ====================================================================
+   AUTHENTIC POSTAGE STAMP (PRANGKO) EFFECT
+   ==================================================================== */
+.stamp-frame {
+  position: relative;
+  background: #ffffff;
+  padding: 4px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
+}
+
+.stamp-border {
+  position: relative;
+  background-color: #ffffff;
+  --stamp-hole: 4.5px;
+  --stamp-space: 14px;
+  -webkit-mask:
+    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, black 100%) 50% 0 / var(--stamp-space) 100% repeat-x,
+    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, black 100%) 50% 100% / var(--stamp-space) 100% repeat-x,
+    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, black 100%) 0 50% / 100% var(--stamp-space) repeat-y,
+    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, black 100%) 100% 50% / 100% var(--stamp-space) repeat-y;
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, black 100%) 50% 0 / var(--stamp-space) 100% repeat-x,
+    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, black 100%) 50% 100% / var(--stamp-space) 100% repeat-x,
+    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, black 100%) 0 50% / 100% var(--stamp-space) repeat-y,
+    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, black 100%) 100% 50% / 100% var(--stamp-space) repeat-y;
+  mask-composite: intersect;
+}
+
+.stamp-inner-border {
+  border: 1.5px dashed rgba(212, 175, 55, 0.65);
+  outline: 1.5px solid rgba(28, 28, 30, 0.15);
+  outline-offset: -4px;
+}
+
