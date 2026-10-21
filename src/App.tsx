@@ -7,6 +7,7 @@ import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
 import { AdminCandidatesPage } from './pages/admin/AdminCandidatesPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminResultsPage } from './pages/admin/AdminResultsPage';
+import { AdminAnnouncementPage } from './pages/admin/AdminAnnouncementPage';
 import { AdminLayout } from './layouts/AdminLayout';
 
 export function App() {
@@ -21,6 +22,9 @@ export function App() {
 
             {/* Administrator Authentication */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
+
+            {/* Dedicated Fullscreen Projector Announcement Route */}
+            <Route path="/admin/announcement" element={<AdminAnnouncementPage />} />
 
             {/* Protected Administrator Dashboard */}
             <Route

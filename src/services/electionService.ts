@@ -2,10 +2,10 @@ import type {
   Candidate,
   Election,
   ElectionResultsSummary,
-  CandidateResult,
 } from '../types/election';
 import { MOCK_CANDIDATES, MOCK_ELECTION } from '../lib/mockData';
 import { safeStorage } from '../lib/storageHelper';
+import { calculateElectionResults } from '../lib/resultsCalculator';
 
 const ELECTION_KEY = 'evoting_election_data';
 const CANDIDATES_KEY = 'evoting_candidates_data';
@@ -219,42 +219,18 @@ export class ElectionService {
     const tally = this.getStoredTally();
     const totalVotes = tally.total;
 
-    // Calculate candidate percentages & map results
-    const results: CandidateResult[] = candidates.map((cand) => {
-      const count = tally.byCandidate[cand.id] || 0;
-      const pct = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
-      return {
-        candidate: cand,
-        voteCount: count,
-        percentage: Number(pct.toFixed(1)),
-        isWinner: false,
-        isTied: false,
-      };
-    });
+    const rawTallies = candidates.map((cand) => ({
+      candidate: cand,
+      voteCount: tally.byCandidate[cand.id] || 0,
+    }));
 
-    // Determine highest vote count
-    const highestVote = Math.max(...results.map((r) => r.voteCount), 0);
-    const topCandidates = results.filter((r) => r.voteCount === highestVote && highestVote > 0);
-
-    const isTie = topCandidates.length > 1;
-
-    results.forEach((r) => {
-      if (r.voteCount === highestVote && highestVote > 0) {
-        if (isTie) {
-          r.isTied = true;
-        } else {
-          r.isWinner = true;
-        }
-      }
-    });
-
-    return {
+    return calculateElectionResults(
+      rawTallies,
       totalVotes,
-      candidateResults: results,
-      isTie,
-      winners: topCandidates.map((r) => r.candidate),
-      closedAt: election.closed_at ?? null,
-    };
+      election.closed_at ?? null,
+      election.started_at ?? null,
+      election.title
+    );
   }
 
   /**

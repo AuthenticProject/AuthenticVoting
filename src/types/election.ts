@@ -49,8 +49,11 @@ export interface ElectionResultsSummary {
   totalVotes: number;
   candidateResults: CandidateResult[];
   isTie: boolean;
+  isZeroVotes: boolean;
   winners: Candidate[];
   closedAt: string | null;
+  startedAt?: string | null;
+  electionTitle?: string;
 }
 
 export interface AuditLog {
