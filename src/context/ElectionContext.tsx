@@ -1,67 +1,145 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type {
   Candidate,
   Election,
   ElectionResultsSummary,
   ElectionStatus,
 } from '../types/election';
-import { electionService } from '../services/electionService';
+import { isSupabaseConfigured } from '../lib/supabaseClient';
+import { electionRepository } from '../services/electionRepository';
+import { candidateRepository } from '../services/candidateRepository';
+import { resultsRepository } from '../services/resultsRepository';
+import { votingService } from '../services/votingService';
+import { electionService as mockElectionService } from '../services/electionService';
 import { ElectionContext } from '../hooks/useElection';
 
 export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [election, setElection] = useState<Election>(() => electionService.getElection());
-  const [candidates, setCandidates] = useState<Candidate[]>(() => electionService.getCandidates());
-  const [totalVotes, setTotalVotes] = useState<number>(() => electionService.getTotalVotesCount());
-  const [results, setResults] = useState<ElectionResultsSummary | null>(() => electionService.getResults());
+  const [election, setElection] = useState<Election>(() => mockElectionService.getElection());
+  const [candidates, setCandidates] = useState<Candidate[]>(() => mockElectionService.getCandidates());
+  const [totalVotes, setTotalVotes] = useState<number>(() => mockElectionService.getTotalVotesCount());
+  const [results, setResults] = useState<ElectionResultsSummary | null>(() => mockElectionService.getResults());
+  const [isLiveDatabase] = useState<boolean>(isSupabaseConfigured);
 
-  const refreshData = useCallback(() => {
-    const currentElection = electionService.getElection();
-    setElection(currentElection);
-    setCandidates(electionService.getCandidates());
-    setTotalVotes(electionService.getTotalVotesCount());
-    setResults(electionService.getResults());
+  const refreshData = useCallback(async () => {
+    try {
+      const el = await electionRepository.getElection();
+      setElection(el);
+
+      const cands = await candidateRepository.getCandidates(el.id);
+      setCandidates(cands);
+
+      const votes = await resultsRepository.getAdminTotalVotes(el.id);
+      setTotalVotes(votes);
+
+      if (el.status === 'closed') {
+        const res = await resultsRepository.getFinalResults(el.id);
+        setResults(res);
+      } else {
+        setResults(null);
+      }
+    } catch (err) {
+      console.warn('Error refreshing election data:', err);
+    }
   }, []);
 
-  const startElection = useCallback(() => {
-    const updated = electionService.startElection();
-    setElection(updated);
-    refreshData();
-  }, [refreshData]);
+  // Initial load and Realtime synchronization setup
+  useEffect(() => {
+    let active = true;
 
-  const closeElection = useCallback(() => {
-    const updated = electionService.closeElection();
-    setElection(updated);
-    refreshData();
-  }, [refreshData]);
+    const fetchInitialData = async () => {
+      try {
+        const el = await electionRepository.getElection();
+        if (!active) return;
+        setElection(el);
 
-  const setElectionStatusForDev = useCallback((status: ElectionStatus) => {
-    const updated = electionService.setElectionStatus(status);
-    setElection(updated);
-    refreshData();
-  }, [refreshData]);
+        const cands = await candidateRepository.getCandidates(el.id);
+        if (!active) return;
+        setCandidates(cands);
 
-  const updateCandidate = useCallback((id: string, updates: Partial<Candidate>) => {
-    const updatedCandidates = electionService.updateCandidate(id, updates);
-    setCandidates(updatedCandidates);
-    refreshData();
-  }, [refreshData]);
+        const votes = await resultsRepository.getAdminTotalVotes(el.id);
+        if (!active) return;
+        setTotalVotes(votes);
 
-  const updateSettings = useCallback((updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => {
-    const updatedElection = electionService.updateElectionSettings(updates);
-    setElection(updatedElection);
-    refreshData();
-  }, [refreshData]);
+        if (el.status === 'closed') {
+          const res = await resultsRepository.getFinalResults(el.id);
+          if (!active) return;
+          setResults(res);
+        } else {
+          setResults(null);
+        }
+      } catch (err) {
+        console.warn('Error fetching initial election data:', err);
+      }
+    };
 
-  const recordVote = useCallback((candidateId: string, requestId: string): boolean => {
-    const success = electionService.recordVote(candidateId, requestId);
-    if (success) {
-      refreshData();
+    void fetchInitialData();
+
+    if (isSupabaseConfigured) {
+      const unsubElection = electionRepository.subscribeToElectionChanges(election.id, () => {
+        void fetchInitialData();
+      });
+
+      const unsubCandidates = candidateRepository.subscribeToCandidateChanges(election.id, () => {
+        void fetchInitialData();
+      });
+
+      return () => {
+        active = false;
+        unsubElection();
+        unsubCandidates();
+      };
     }
-    return success;
+
+    return () => {
+      active = false;
+    };
+  }, [election.id]);
+
+  const startElection = useCallback(async () => {
+    await electionRepository.startElection(election.id);
+    await refreshData();
+  }, [election.id, refreshData]);
+
+  const closeElection = useCallback(async () => {
+    await electionRepository.closeElection(election.id);
+    await refreshData();
+  }, [election.id, refreshData]);
+
+  const setElectionStatusForDev = useCallback(async (status: ElectionStatus) => {
+    mockElectionService.setElectionStatus(status);
+    await refreshData();
   }, [refreshData]);
+
+  const updateCandidate = useCallback(
+    async (id: string, updates: Partial<Candidate>) => {
+      await candidateRepository.updateCandidate(id, updates);
+      await refreshData();
+    },
+    [refreshData]
+  );
+
+  const updateSettings = useCallback(
+    async (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => {
+      await electionRepository.updateSettings(election.id, updates);
+      await refreshData();
+    },
+    [election.id, refreshData]
+  );
+
+  const recordVote = useCallback(
+    async (candidateId: string, requestId: string): Promise<boolean> => {
+      const res = await votingService.submitVote(candidateId, requestId);
+      if (res.success) {
+        await refreshData();
+        return true;
+      }
+      return false;
+    },
+    [refreshData]
+  );
 
   const resetAllToDefault = useCallback(() => {
-    electionService.resetToDefault();
+    mockElectionService.resetToDefault();
     refreshData();
   }, [refreshData]);
 
@@ -77,6 +155,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         isSettingsLocked,
         isCandidatesLocked,
         results,
+        isLiveDatabase,
         startElection,
         closeElection,
         setElectionStatusForDev,

@@ -12,6 +12,7 @@ import {
   ArrowRight,
   ExternalLink,
   Lock,
+  Database,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
@@ -20,6 +21,7 @@ export const AdminOverviewPage: React.FC = () => {
   const {
     election,
     totalVotes,
+    isLiveDatabase,
     startElection,
     closeElection,
   } = useElection();
@@ -61,8 +63,21 @@ export const AdminOverviewPage: React.FC = () => {
       {/* Top Banner: Event Information */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-primary/5 text-navy-primary text-xs font-bold uppercase tracking-wider mb-2">
-            Identitas Pemilihan Aktif
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-primary/5 text-navy-primary text-xs font-bold uppercase tracking-wider">
+              Identitas Pemilihan Aktif
+            </span>
+            {isLiveDatabase ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+                <Database className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Supabase PostgreSQL Terhubung</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-300">
+                <Database className="w-3.5 h-3.5 text-amber-600" />
+                <span>Mode Simulasi Terisolasi (Kredensial Belum Dikonfigurasi)</span>
+              </span>
+            )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-primary leading-tight">
             {election.title}

@@ -11,6 +11,7 @@ import {
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo';
+import { storageService } from '../../services/storageService';
 
 export const AdminSettingsPage: React.FC = () => {
   const { election, isSettingsLocked, updateSettings } = useElection();
@@ -24,23 +25,19 @@ export const AdminSettingsPage: React.FC = () => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isSettingsLocked) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setValidationError('Berkas logo harus berupa gambar (PNG, JPG, SVG, atau WEBP).');
+    setValidationError(null);
+    const { url, error } = await storageService.uploadAsset(file, 'logos', 'event_logo');
+    if (error || !url) {
+      setValidationError(error || 'Gagal mengunggah berkas logo.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setFormData((prev) => ({ ...prev, logo_url: result }));
-      setValidationError(null);
-    };
-    reader.readAsDataURL(file);
+    setFormData((prev) => ({ ...prev, logo_url: url }));
   };
 
   const handleSave = (e: React.FormEvent) => {

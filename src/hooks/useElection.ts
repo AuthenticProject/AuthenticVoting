@@ -13,13 +13,14 @@ export interface ElectionContextType {
   isSettingsLocked: boolean;
   isCandidatesLocked: boolean;
   results: ElectionResultsSummary | null;
-  startElection: () => void;
-  closeElection: () => void;
-  setElectionStatusForDev: (status: ElectionStatus) => void;
-  updateCandidate: (id: string, updates: Partial<Candidate>) => void;
-  updateSettings: (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => void;
-  recordVote: (candidateId: string, requestId: string) => boolean;
-  refreshData: () => void;
+  isLiveDatabase: boolean;
+  startElection: () => Promise<void>;
+  closeElection: () => Promise<void>;
+  setElectionStatusForDev: (status: ElectionStatus) => Promise<void>;
+  updateCandidate: (id: string, updates: Partial<Candidate>) => Promise<void>;
+  updateSettings: (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => Promise<void>;
+  recordVote: (candidateId: string, requestId: string) => Promise<boolean>;
+  refreshData: () => Promise<void>;
   resetAllToDefault: () => void;
 }
 

@@ -12,6 +12,7 @@ import {
 import type { Candidate } from '../../types/election';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
+import { storageService } from '../../services/storageService';
 
 export const AdminCandidatesPage: React.FC = () => {
   const { candidates, isCandidatesLocked, updateCandidate, election } = useElection();
@@ -45,30 +46,19 @@ export const AdminCandidatesPage: React.FC = () => {
     setValidationError(null);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !editingCandidate) return;
 
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      setValidationError('Berkas harus berupa gambar (JPG, PNG, atau WEBP).');
+    setValidationError(null);
+    const { url, error } = await storageService.uploadAsset(file, 'candidates', editingCandidate.id);
+    if (error || !url) {
+      setValidationError(error || 'Gagal mengunggah foto.');
       return;
     }
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setValidationError('Ukuran berkas gambar maksimal 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setPreviewPhoto(result);
-      setFormData((prev) => ({ ...prev, photo_url: result }));
-      setValidationError(null);
-    };
-    reader.readAsDataURL(file);
+    setPreviewPhoto(url);
+    setFormData((prev) => ({ ...prev, photo_url: url }));
   };
 
   const handleSave = (e: React.FormEvent) => {

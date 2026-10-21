@@ -5,6 +5,7 @@ import type {
   CandidateResult,
 } from '../types/election';
 import { MOCK_CANDIDATES, MOCK_ELECTION } from '../lib/mockData';
+import { safeStorage } from '../lib/storageHelper';
 
 const ELECTION_KEY = 'evoting_election_data';
 const CANDIDATES_KEY = 'evoting_candidates_data';
@@ -19,7 +20,7 @@ interface VotesTally {
 export class ElectionService {
   private getStoredElection(): Election {
     try {
-      const data = localStorage.getItem(ELECTION_KEY);
+      const data = safeStorage.getItem(ELECTION_KEY);
       if (data) return JSON.parse(data);
     } catch {
       // fallback
@@ -29,7 +30,7 @@ export class ElectionService {
 
   private saveElection(election: Election): void {
     try {
-      localStorage.setItem(ELECTION_KEY, JSON.stringify(election));
+      safeStorage.setItem(ELECTION_KEY, JSON.stringify(election));
     } catch {
       // fallback
     }
@@ -37,7 +38,7 @@ export class ElectionService {
 
   private getStoredCandidates(): Candidate[] {
     try {
-      const data = localStorage.getItem(CANDIDATES_KEY);
+      const data = safeStorage.getItem(CANDIDATES_KEY);
       if (data) return JSON.parse(data);
     } catch {
       // fallback
@@ -47,7 +48,7 @@ export class ElectionService {
 
   private saveCandidates(candidates: Candidate[]): void {
     try {
-      localStorage.setItem(CANDIDATES_KEY, JSON.stringify(candidates));
+      safeStorage.setItem(CANDIDATES_KEY, JSON.stringify(candidates));
     } catch {
       // fallback
     }
@@ -55,7 +56,7 @@ export class ElectionService {
 
   private getStoredTally(): VotesTally {
     try {
-      const data = localStorage.getItem(VOTES_TALLY_KEY);
+      const data = safeStorage.getItem(VOTES_TALLY_KEY);
       if (data) return JSON.parse(data);
     } catch {
       // fallback
@@ -73,7 +74,7 @@ export class ElectionService {
 
   private saveTally(tally: VotesTally): void {
     try {
-      localStorage.setItem(VOTES_TALLY_KEY, JSON.stringify(tally));
+      safeStorage.setItem(VOTES_TALLY_KEY, JSON.stringify(tally));
     } catch {
       // fallback
     }
@@ -128,7 +129,7 @@ export class ElectionService {
   }
 
   /**
-   * For QA/testing convenience in Phase 2
+   * For QA/testing convenience in Phase 2 & 3
    */
   setElectionStatus(status: Election['status']): Election {
     const current = this.getStoredElection();
@@ -176,7 +177,7 @@ export class ElectionService {
     // Check request_id uniqueness
     let processed: string[] = [];
     try {
-      const stored = localStorage.getItem(PROCESSED_REQUESTS_KEY);
+      const stored = safeStorage.getItem(PROCESSED_REQUESTS_KEY);
       if (stored) processed = JSON.parse(stored);
     } catch {
       processed = [];
@@ -196,7 +197,7 @@ export class ElectionService {
     // Mark requestId as processed
     processed.push(requestId);
     try {
-      localStorage.setItem(PROCESSED_REQUESTS_KEY, JSON.stringify(processed));
+      safeStorage.setItem(PROCESSED_REQUESTS_KEY, JSON.stringify(processed));
     } catch {
       // ignore
     }
@@ -260,10 +261,10 @@ export class ElectionService {
    * Reset mock data back to defaults (for QA / testing convenience)
    */
   resetToDefault(): void {
-    localStorage.removeItem(ELECTION_KEY);
-    localStorage.removeItem(CANDIDATES_KEY);
-    localStorage.removeItem(VOTES_TALLY_KEY);
-    localStorage.removeItem(PROCESSED_REQUESTS_KEY);
+    safeStorage.removeItem(ELECTION_KEY);
+    safeStorage.removeItem(CANDIDATES_KEY);
+    safeStorage.removeItem(VOTES_TALLY_KEY);
+    safeStorage.removeItem(PROCESSED_REQUESTS_KEY);
   }
 }
 
