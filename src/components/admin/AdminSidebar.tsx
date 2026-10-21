@@ -55,7 +55,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       {/* Brand Header */}
       <div className="p-6 border-b border-navy-light/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Logo size="sm" />
+          <Logo src={election.logo_url} size="sm" />
           <div>
             <h2 className="text-base font-extrabold tracking-tight text-white leading-tight">
               E-Voting Admin

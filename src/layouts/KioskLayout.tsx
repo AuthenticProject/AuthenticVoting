@@ -43,6 +43,7 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
       <KioskHeader
         title={election.title}
         subtitle={election.subtitle}
+        logoUrl={election.logo_url}
         currentStep={currentStep}
         onResetSession={onResetSession}
       />

@@ -4,7 +4,7 @@ export const MOCK_ELECTION: Election = {
   id: 'el-mubes-2026',
   title: 'Pemilihan jendral 5102',
   subtitle: 'Pondok Modern Darussalam Gontor',
-  logo_url: '/assets/logo-garuda.svg',
+  logo_url: '',
   status: 'draft',
   started_at: null,
   closed_at: null,

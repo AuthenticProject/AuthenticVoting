@@ -101,7 +101,7 @@ export const AdminAnnouncementPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3">
-            <Logo size="sm" />
+            <Logo src={election.logo_url} size="sm" />
             <div>
               <span className="text-[10px] font-bold tracking-widest uppercase text-gold-light block">
                 SIDANG PLENO PENGUMUMAN HASIL RESMI
@@ -182,7 +182,7 @@ export const AdminAnnouncementPage: React.FC = () => {
                   animate={{ scale: 1, opacity: 1 }}
                   className="flex flex-col items-center max-w-xl"
                 >
-                  <Logo size="xl" className="mb-6 drop-shadow-2xl" />
+                  <Logo src={election.logo_url} size="xl" className="mb-6 drop-shadow-2xl" />
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-accent/20 border border-gold-accent/40 text-gold-light text-xs sm:text-sm font-bold uppercase tracking-widest mb-3">
                     <Sparkles className="w-4 h-4 text-gold-accent" />
                     Penetapan Hasil Pemilihan Resmi

@@ -53,7 +53,7 @@ export const WinnerAnnouncementModal: React.FC<WinnerAnnouncementModalProps> = (
       <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between border-b border-navy-light/40 bg-navy-900/60 backdrop-blur-md">
         {/* Left Branding */}
         <div className="flex items-center gap-3">
-          <Logo size="sm" />
+          <Logo src={election.logo_url} size="sm" />
           <div>
             <span className="text-[11px] font-bold tracking-widest uppercase text-gold-light block">
               PENGUMUMAN RESMI HASIL PEMILIHAN

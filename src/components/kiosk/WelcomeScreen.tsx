@@ -31,7 +31,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         className="text-center pt-2 sm:pt-4"
       >
         <div className="inline-flex flex-col items-center">
-          <Logo size="xl" className="mb-4 sm:mb-6" />
+          <Logo src={election.logo_url} size="xl" className="mb-4 sm:mb-6" />
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-navy-primary/5 border border-navy-primary/15 text-navy-primary text-xs sm:text-sm font-bold tracking-wide uppercase mb-3">
             <span className="w-2 h-2 rounded-full bg-gold-accent animate-pulse" />
             Sistem Pemilihan Elektronik Kiosk

@@ -7,6 +7,7 @@ import type { KioskStep } from '../../types/election';
 interface KioskHeaderProps {
   title: string;
   subtitle: string;
+  logoUrl?: string;
   currentStep: KioskStep;
   onResetSession?: () => void;
 }
@@ -14,6 +15,7 @@ interface KioskHeaderProps {
 export const KioskHeader: React.FC<KioskHeaderProps> = ({
   title,
   subtitle,
+  logoUrl,
   currentStep,
 }) => {
   return (
@@ -21,7 +23,7 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Left: Branding & Event Identity */}
         <div className="flex items-center gap-3.5">
-          <Logo size="sm" />
+          <Logo src={logoUrl} size="sm" />
           <div className="leading-tight">
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
               <span>{title}</span>
