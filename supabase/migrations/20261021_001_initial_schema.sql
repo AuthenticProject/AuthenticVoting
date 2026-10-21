@@ -107,11 +107,13 @@ $$;
 
 -- 3.1 ELECTIONS RLS
 -- Anyone can view public election metadata
+DROP POLICY IF EXISTS "Public can view elections" ON public.elections;
 CREATE POLICY "Public can view elections"
     ON public.elections FOR SELECT
     USING (true);
 
 -- Only admins can update elections, and settings only while draft
+DROP POLICY IF EXISTS "Admins can update elections" ON public.elections;
 CREATE POLICY "Admins can update elections"
     ON public.elections FOR UPDATE
     TO authenticated
@@ -120,11 +122,13 @@ CREATE POLICY "Admins can update elections"
 
 -- 3.2 CANDIDATES RLS
 -- Anyone can view candidate cards
+DROP POLICY IF EXISTS "Public can view candidates" ON public.candidates;
 CREATE POLICY "Public can view candidates"
     ON public.candidates FOR SELECT
     USING (true);
 
 -- Admins can insert/update candidates ONLY when election is draft
+DROP POLICY IF EXISTS "Admins can insert candidates when draft" ON public.candidates;
 CREATE POLICY "Admins can insert candidates when draft"
     ON public.candidates FOR INSERT
     TO authenticated
@@ -136,6 +140,7 @@ CREATE POLICY "Admins can insert candidates when draft"
         )
     );
 
+DROP POLICY IF EXISTS "Admins can update candidates when draft" ON public.candidates;
 CREATE POLICY "Admins can update candidates when draft"
     ON public.candidates FOR UPDATE
     TO authenticated
@@ -159,29 +164,34 @@ CREATE POLICY "Admins can update candidates when draft"
 -- Direct public queries return 0 rows.
 -- Votes are inserted exclusively via the SECURITY DEFINER RPC `submit_vote`.
 -- Votes are immutable.
+DROP POLICY IF EXISTS "No public read access to votes" ON public.votes;
 CREATE POLICY "No public read access to votes"
     ON public.votes FOR SELECT
     USING (false);
 
 -- 3.4 ADMIN USERS RLS
+DROP POLICY IF EXISTS "Admins can view own admin record" ON public.admin_users;
 CREATE POLICY "Admins can view own admin record"
     ON public.admin_users FOR SELECT
     TO authenticated
     USING (auth_user_id = auth.uid());
 
 -- 3.5 AUDIT LOGS RLS
+DROP POLICY IF EXISTS "Admins can view audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view audit logs"
     ON public.audit_logs FOR SELECT
     TO authenticated
     USING (public.is_admin());
 
 -- 3.6 KIOSK SESSIONS RLS
+DROP POLICY IF EXISTS "Admins can manage kiosk sessions" ON public.kiosk_sessions;
 CREATE POLICY "Admins can manage kiosk sessions"
     ON public.kiosk_sessions FOR ALL
     TO authenticated
     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
+DROP POLICY IF EXISTS "Public can verify active kiosk token" ON public.kiosk_sessions;
 CREATE POLICY "Public can verify active kiosk token"
     ON public.kiosk_sessions FOR SELECT
     USING (is_active = true AND (expires_at IS NULL OR expires_at > NOW()));
@@ -568,11 +578,13 @@ VALUES ('election-assets', 'election-assets', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Public can view assets
+DROP POLICY IF EXISTS "Public can view election assets" ON storage.objects;
 CREATE POLICY "Public can view election assets"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'election-assets');
 
 -- Only authenticated admins can upload/update/delete assets
+DROP POLICY IF EXISTS "Admins can upload election assets" ON storage.objects;
 CREATE POLICY "Admins can upload election assets"
     ON storage.objects FOR INSERT
     TO authenticated
@@ -581,6 +593,7 @@ CREATE POLICY "Admins can upload election assets"
         public.is_admin()
     );
 
+DROP POLICY IF EXISTS "Admins can update election assets" ON storage.objects;
 CREATE POLICY "Admins can update election assets"
     ON storage.objects FOR UPDATE
     TO authenticated
@@ -589,6 +602,7 @@ CREATE POLICY "Admins can update election assets"
         public.is_admin()
     );
 
+DROP POLICY IF EXISTS "Admins can delete election assets" ON storage.objects;
 CREATE POLICY "Admins can delete election assets"
     ON storage.objects FOR DELETE
     TO authenticated
