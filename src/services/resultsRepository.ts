@@ -7,7 +7,12 @@ export class ResultsRepository {
   /**
    * Fetches total votes count for the admin overview.
    */
-  async getAdminTotalVotes(electionId: string): Promise<number> {
+  async getAdminTotalVotes(electionId: string, status?: string, startedAt?: string | null): Promise<number> {
+    // Jika pemilihan berstatus DRAFT atau belum pernah dimulai, suara PASTI 0
+    if (status === 'draft' || !startedAt) {
+      return 0;
+    }
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.rpc('get_admin_total_votes', {
@@ -31,7 +36,21 @@ export class ResultsRepository {
    * Fetches live real-time election results breakdown for each candidate.
    * Works across active and closed states.
    */
-  async getLiveResults(electionId: string, candidates: Candidate[] = []): Promise<ElectionResultsSummary | null> {
+  async getLiveResults(
+    electionId: string,
+    candidates: Candidate[] = [],
+    status?: string,
+    startedAt?: string | null
+  ): Promise<ElectionResultsSummary | null> {
+    // Jika pemilihan berstatus DRAFT atau belum dimulai, reset seluruh kandidat ke 0 suara
+    if (status === 'draft' || !startedAt) {
+      const zeroTallies: RawCandidateTally[] = candidates.map((cand) => ({
+        candidate: cand,
+        voteCount: 0,
+      }));
+      return calculateElectionResults(zeroTallies, 0);
+    }
+
     // 1. Coba panggil RPC get_live_results dari Supabase jika tersedia
     if (isSupabaseConfigured && supabase) {
       try {
@@ -78,12 +97,18 @@ export class ResultsRepository {
         // Lanjut ke fallback di bawah
       }
 
-      // 2. Coba baca langsung dari tabel votes jika izin SELECT sudah dibuka
+      // 2. Coba baca langsung dari tabel votes jika izin SELECT sudah dibuka (hanya yang masuk setelah startedAt)
       try {
-        const { data: voteRows, error: vError } = await supabase
+        let voteQuery = supabase
           .from('votes')
           .select('candidate_id')
           .eq('election_id', electionId);
+
+        if (startedAt) {
+          voteQuery = voteQuery.gte('created_at', startedAt);
+        }
+
+        const { data: voteRows, error: vError } = await voteQuery;
 
         if (!vError && voteRows) {
           const counts: Record<string, number> = {};

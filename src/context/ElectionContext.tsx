@@ -28,10 +28,16 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const cands = await candidateRepository.getCandidates(el.id);
       setCandidates(cands);
 
-      const votes = await resultsRepository.getAdminTotalVotes(el.id);
-      const liveRes = await resultsRepository.getLiveResults(el.id, cands);
-      setResults(liveRes);
-      setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
+      if (el.status === 'draft') {
+        setTotalVotes(0);
+        const zeroRes = await resultsRepository.getLiveResults(el.id, cands, 'draft', null);
+        setResults(zeroRes);
+      } else {
+        const votes = await resultsRepository.getAdminTotalVotes(el.id, el.status, el.started_at);
+        const liveRes = await resultsRepository.getLiveResults(el.id, cands, el.status, el.started_at);
+        setResults(liveRes);
+        setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
+      }
     } catch (err) {
       console.warn('Error refreshing election data:', err);
     }
@@ -51,11 +57,18 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!active) return;
         setCandidates(cands);
 
-        const votes = await resultsRepository.getAdminTotalVotes(el.id);
-        const liveRes = await resultsRepository.getLiveResults(el.id, cands);
-        if (!active) return;
-        setResults(liveRes);
-        setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
+        if (el.status === 'draft') {
+          if (!active) return;
+          setTotalVotes(0);
+          const zeroRes = await resultsRepository.getLiveResults(el.id, cands, 'draft', null);
+          setResults(zeroRes);
+        } else {
+          const votes = await resultsRepository.getAdminTotalVotes(el.id, el.status, el.started_at);
+          const liveRes = await resultsRepository.getLiveResults(el.id, cands, el.status, el.started_at);
+          if (!active) return;
+          setResults(liveRes);
+          setTotalVotes(Math.max(votes, liveRes?.totalVotes || 0));
+        }
       } catch (err) {
         console.warn('Error fetching initial election data:', err);
       }
