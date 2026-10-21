@@ -110,6 +110,22 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await refreshData();
   }, [refreshData]);
 
+  const addCandidate = useCallback(
+    async (candidateData: { name: string; title_or_role?: string; vision?: string; photo_url?: string }) => {
+      await candidateRepository.addCandidate(candidateData);
+      await refreshData();
+    },
+    [refreshData]
+  );
+
+  const deleteCandidate = useCallback(
+    async (id: string) => {
+      await candidateRepository.deleteCandidate(id);
+      await refreshData();
+    },
+    [refreshData]
+  );
+
   const updateCandidate = useCallback(
     async (id: string, updates: Partial<Candidate>) => {
       await candidateRepository.updateCandidate(id, updates);
@@ -137,6 +153,11 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [refreshData]
   );
 
+  const resetToDraft = useCallback(async () => {
+    mockElectionService.resetToDraft();
+    await refreshData();
+  }, [refreshData]);
+
   const resetAllToDefault = useCallback(() => {
     mockElectionService.resetToDefault();
     refreshData();
@@ -159,10 +180,13 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         closeElection,
         setElectionStatusForDev,
         updateCandidate,
+        addCandidate,
+        deleteCandidate,
         updateSettings,
         recordVote,
         refreshData,
         resetAllToDefault,
+        resetToDraft,
       }}
     >
       {children}

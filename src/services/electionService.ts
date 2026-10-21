@@ -55,14 +55,28 @@ export class ElectionService {
   private getStoredCandidates(): Candidate[] {
     try {
       const data = safeStorage.getItem(CANDIDATES_KEY);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed: Candidate[] = JSON.parse(data);
+        // Automatically purge obsolete military dummy mock candidates if detected
+        const hasLegacyDummy = parsed.some(
+          (c) =>
+            c.name.includes('Bambang Soedirman') ||
+            c.name.includes('Joko Hartono') ||
+            c.name.includes('Hendra Gunawan')
+        );
+        if (hasLegacyDummy) {
+          this.saveCandidates(MOCK_CANDIDATES);
+          return MOCK_CANDIDATES;
+        }
+        return parsed;
+      }
     } catch {
       // fallback
     }
     return MOCK_CANDIDATES;
   }
 
-  private saveCandidates(candidates: Candidate[]): void {
+  public saveCandidates(candidates: Candidate[]): void {
     try {
       safeStorage.setItem(CANDIDATES_KEY, JSON.stringify(candidates));
     } catch {
@@ -73,22 +87,30 @@ export class ElectionService {
   private getStoredTally(): VotesTally {
     try {
       const data = safeStorage.getItem(VOTES_TALLY_KEY);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed = JSON.parse(data);
+        // If tally contains old dummy baseline (28 votes for cand-01, or total 68/69), reset to pure 0
+        if (
+          parsed.byCandidate?.['cand-01'] === 28 ||
+          parsed.total === 68 ||
+          parsed.total === 69
+        ) {
+          const cleanTally: VotesTally = { total: 0, byCandidate: {} };
+          this.saveTally(cleanTally);
+          return cleanTally;
+        }
+        return parsed;
+      }
     } catch {
       // fallback
     }
-    // Default initial mock tally with plausible baseline for dev demo
     return {
-      total: 68,
-      byCandidate: {
-        'cand-01': 28,
-        'cand-02': 24,
-        'cand-03': 16,
-      },
+      total: 0,
+      byCandidate: {},
     };
   }
 
-  private saveTally(tally: VotesTally): void {
+  public saveTally(tally: VotesTally): void {
     try {
       safeStorage.setItem(VOTES_TALLY_KEY, JSON.stringify(tally));
     } catch {
@@ -164,6 +186,66 @@ export class ElectionService {
     return this.getStoredCandidates();
   }
 
+  addCandidate(candidateData: {
+    name: string;
+    title_or_role?: string;
+    vision?: string;
+    photo_url?: string;
+  }): Candidate {
+    const election = this.getStoredElection();
+    if (election.status !== 'draft') {
+      throw new Error('Data kandidat terkunci. Penambahan kandidat hanya diperbolehkan saat status DRAFT (sebelum pemilihan dimulai).');
+    }
+
+    const currentList = this.getStoredCandidates();
+    const nextNumber =
+      currentList.length > 0
+        ? Math.max(...currentList.map((c) => c.candidate_number)) + 1
+        : 1;
+
+    const newCandidate: Candidate = {
+      id: `cand-${Date.now()}`,
+      election_id: election.id,
+      candidate_number: nextNumber,
+      name: candidateData.name.trim(),
+      title_or_role: (candidateData.title_or_role || '').trim(),
+      vision: (candidateData.vision || '').trim(),
+      photo_url: candidateData.photo_url || '',
+    };
+
+    const updatedList = [...currentList, newCandidate];
+    this.saveCandidates(updatedList);
+    return newCandidate;
+  }
+
+  deleteCandidate(id: string): Candidate[] {
+    const election = this.getStoredElection();
+    if (election.status !== 'draft') {
+      throw new Error('Data kandidat terkunci. Penghapusan kandidat hanya diperbolehkan saat status DRAFT.');
+    }
+
+    const currentList = this.getStoredCandidates();
+    if (currentList.length <= 1) {
+      throw new Error('Minimal harus ada 1 kandidat dalam pemilihan.');
+    }
+
+    const remaining = currentList.filter(
+      (c) =>
+        c.id !== id &&
+        c.candidate_number !== Number(id) &&
+        !id.endsWith(`1${c.candidate_number}`)
+    );
+
+    // Re-index candidate numbers sequentially (1, 2, 3...)
+    const reindexed = remaining.map((c, index) => ({
+      ...c,
+      candidate_number: index + 1,
+    }));
+
+    this.saveCandidates(reindexed);
+    return reindexed;
+  }
+
   updateCandidate(id: string, updates: Partial<Pick<Candidate, 'name' | 'title_or_role' | 'photo_url' | 'vision'>>): Candidate[] {
     const election = this.getStoredElection();
     if (election.status !== 'draft') {
@@ -175,6 +257,7 @@ export class ElectionService {
       // Cocokkan berdasarkan ID persis, atau nomor urut kandidat jika ID berupa UUID Supabase
       const match =
         c.id === id ||
+        c.candidate_number === Number(id) ||
         (id.endsWith('11') && c.candidate_number === 1) ||
         (id.endsWith('12') && c.candidate_number === 2) ||
         (id.endsWith('13') && c.candidate_number === 3);
@@ -272,13 +355,33 @@ export class ElectionService {
   }
 
   /**
-   * Reset mock data back to defaults (for QA / testing convenience)
+   * Reset election status to DRAFT.
+   * Clears votes tally and processed requests,
+   * but PRESERVES all uploaded/saved candidates.
    */
-  resetToDefault(): void {
-    safeStorage.removeItem(ELECTION_KEY);
-    safeStorage.removeItem(CANDIDATES_KEY);
+  resetToDraft(): Election {
+    const current = this.getStoredElection();
+    const updated: Election = {
+      ...current,
+      status: 'draft',
+      started_at: null,
+      closed_at: null,
+      updated_at: new Date().toISOString(),
+    };
+    this.saveElection(updated);
+    // Clear votes tally and processed requests completely
     safeStorage.removeItem(VOTES_TALLY_KEY);
     safeStorage.removeItem(PROCESSED_REQUESTS_KEY);
+    // DO NOT clear CANDIDATES_KEY!
+    return updated;
+  }
+
+  /**
+   * Reset mock data back to defaults (for QA / testing convenience).
+   * Safely preserves user-uploaded candidates.
+   */
+  resetToDefault(): void {
+    this.resetToDraft();
   }
 }
 

@@ -18,10 +18,13 @@ export interface ElectionContextType {
   closeElection: () => Promise<void>;
   setElectionStatusForDev: (status: ElectionStatus) => Promise<void>;
   updateCandidate: (id: string, updates: Partial<Candidate>) => Promise<void>;
+  addCandidate: (candidate: { name: string; title_or_role?: string; vision?: string; photo_url?: string }) => Promise<void>;
+  deleteCandidate: (id: string) => Promise<void>;
   updateSettings: (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => Promise<void>;
   recordVote: (candidateId: string, requestId: string) => Promise<{ success: boolean; message: string; error?: string }>;
   refreshData: () => Promise<void>;
   resetAllToDefault: () => void;
+  resetToDraft: () => Promise<void>;
 }
 
 export const ElectionContext = createContext<ElectionContextType | undefined>(undefined);

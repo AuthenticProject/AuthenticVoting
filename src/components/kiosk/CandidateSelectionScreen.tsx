@@ -93,8 +93,18 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
         </motion.div>
       )}
 
-      {/* Grid of 3 Candidates: Exactly 3 equal slots, optimized for tablet landscape */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 items-stretch min-h-0 py-1">
+      {/* Dynamic Candidate Grid: Responsive for 1, 2, 3, 4, 5+ candidates */}
+      <div
+        className={`flex-1 grid gap-3 sm:gap-5 lg:gap-6 items-stretch min-h-0 py-1 overflow-y-auto ${
+          candidates.length <= 2
+            ? 'grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto w-full'
+            : candidates.length === 3
+            ? 'grid-cols-1 md:grid-cols-3 w-full'
+            : candidates.length === 4
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full'
+            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full'
+        }`}
+      >
         {candidates.map((candidate) => {
           const isSelected = selectedCandidate?.id === candidate.id;
           // While submitting, all cards are disabled

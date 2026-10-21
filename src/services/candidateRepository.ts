@@ -4,9 +4,15 @@ import { electionService as mockElectionService } from './electionService';
 
 export class CandidateRepository {
   /**
-   * Fetches all three candidates for the specified election
+   * Fetches all candidates for the specified election
    */
   async getCandidates(electionId: string): Promise<Candidate[]> {
+    // Local candidate store contains the authoritative user-uploaded candidates and any newly added ones
+    const localList = mockElectionService.getCandidates();
+    if (localList && localList.length > 0) {
+      return localList;
+    }
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -15,33 +21,66 @@ export class CandidateRepository {
           .eq('election_id', electionId)
           .order('candidate_number', { ascending: true });
 
-        if (error) {
-          console.warn('Gagal memuat kandidat dari Supabase, beralih ke data lokal:', error.message);
-          return mockElectionService.getCandidates();
-        }
-
-        if (data && data.length > 0) {
-          const localList = mockElectionService.getCandidates();
-          return data.map((d) => {
-            const local = localList.find((l) => l.id === d.id || l.candidate_number === d.candidate_number);
-            return {
-              id: d.id,
-              election_id: d.election_id,
-              candidate_number: d.candidate_number,
-              name: local?.name ?? d.name,
-              title_or_role: local?.title_or_role ?? (d.title_or_role || ''),
-              vision: local?.vision ?? (d.vision || ''),
-              photo_url: local?.photo_url ?? (d.photo_url || ''),
-            };
-          });
+        if (!error && data && data.length > 0) {
+          return data as Candidate[];
         }
       } catch (err) {
         console.warn('Kendala memuat kandidat dari Supabase:', err);
-        return mockElectionService.getCandidates();
       }
     }
 
     return mockElectionService.getCandidates();
+  }
+
+  /**
+   * Adds a new candidate
+   */
+  async addCandidate(
+    candidateData: { name: string; title_or_role?: string; vision?: string; photo_url?: string }
+  ): Promise<Candidate> {
+    const newCand = mockElectionService.addCandidate(candidateData);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('candidates').insert({
+          id: newCand.id,
+          election_id: newCand.election_id,
+          candidate_number: newCand.candidate_number,
+          name: newCand.name,
+          title_or_role: newCand.title_or_role,
+          vision: newCand.vision,
+          photo_url: newCand.photo_url,
+        });
+
+        if (error) {
+          console.warn('Catatan sinkronisasi Supabase tambah kandidat:', error.message);
+        }
+      } catch (err) {
+        console.warn('Kendala tambah kandidat Supabase:', err);
+      }
+    }
+
+    return newCand;
+  }
+
+  /**
+   * Deletes a candidate by ID
+   */
+  async deleteCandidate(candidateId: string): Promise<{ success: boolean; error?: string }> {
+    mockElectionService.deleteCandidate(candidateId);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('candidates').delete().eq('id', candidateId);
+        if (error) {
+          console.warn('Catatan sinkronisasi Supabase hapus kandidat:', error.message);
+        }
+      } catch (err) {
+        console.warn('Kendala hapus kandidat Supabase:', err);
+      }
+    }
+
+    return { success: true };
   }
 
   /**

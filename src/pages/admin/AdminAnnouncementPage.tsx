@@ -377,8 +377,8 @@ export const AdminAnnouncementPage: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 3 Candidate Cards Side-by-Side */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+              {/* Candidate Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                 {results.candidateResults.map((item) => {
                   const isTop = item.isWinner || item.isTied;
                   return (

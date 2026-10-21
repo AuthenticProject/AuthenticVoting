@@ -142,11 +142,15 @@ export const AdminOverviewPage: React.FC = () => {
             size="lg"
             leftIcon={<RotateCcw className="w-4 h-4 text-slate-500" />}
             onClick={() => {
-              if (window.confirm('Reset status pemilihan ke DRAFT? Suara akan dikosongkan dan data kandidat dapat diedit kembali.')) {
+              if (
+                window.confirm(
+                  'Kembalikan status pemilihan ke DRAFT? Perolehan suara akan direset ke 0, sementara data kandidat Anda tetap tersimpan aman tanpa perlu input ulang.'
+                )
+              ) {
                 resetAllToDefault();
               }
             }}
-            title="Kembalikan status ke DRAFT & reset suara"
+            title="Kembalikan status ke DRAFT & reset suara (data kandidat tetap aman)"
           >
             Reset ke Draft
           </Button>
