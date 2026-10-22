@@ -34,7 +34,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
       whileTap={!disabled && !isSubmitting ? { scale: 0.985 } : undefined}
       onClick={handleClick}
       className={`
-        stamp-card-container relative h-full flex flex-col justify-between
+        stamp-card-container relative w-full max-w-[340px] sm:max-w-[360px] mx-auto flex flex-col justify-between
         cursor-pointer select-none transition-transform duration-200
         ${isSelected ? 'is-selected' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
@@ -53,17 +53,17 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
       {/* Outer Card Wrapper with Vintage Filateli Border */}
       <div
         className={`
-          stamp-card flex flex-col justify-between h-full p-3 sm:p-4
-          transition-all duration-200 border-2
+          stamp-card flex flex-col justify-between p-3.5 sm:p-4 rounded-xl
+          transition-all duration-200 border-2 shadow-card
           ${
             isSelected
-              ? 'border-gold-accent bg-gradient-to-b from-amber-50/90 via-white to-amber-50/70 shadow-lg'
+              ? 'border-gold-accent bg-gradient-to-b from-amber-50/95 via-white to-amber-50/80 shadow-gold-glow'
               : 'border-slate-300/80 hover:border-gold-accent bg-white/95 backdrop-blur-sm'
           }
         `}
       >
         {/* Inner Card Container */}
-        <div className="relative flex flex-col justify-between h-full">
+        <div className="relative flex flex-col justify-between">
           <div>
             {/* Top Status & Indicator (Simplified and Clean) */}
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-dashed border-slate-200">

@@ -379,11 +379,6 @@ export const AdminCandidatesPage: React.FC = () => {
                           {candidate.title_or_role}
                         </p>
                       )}
-                      {candidate.vision && (
-                        <div className="mt-2.5 p-2 rounded-lg bg-amber-50/40 border border-dashed border-gold-accent/30 text-xs text-slate-600 italic">
-                          "{candidate.vision}"
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -493,36 +488,7 @@ export const AdminCandidatesPage: React.FC = () => {
                 />
               </div>
 
-              {/* Vision */}
-              <div>
-                <label className="block text-xs font-bold text-navy-primary uppercase tracking-wider mb-1.5">
-                  Visi / Motto Singkat
-                </label>
-                <textarea
-                  value={formData.vision}
-                  onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
-                  placeholder="Visi atau moto pengabdian kandidat..."
-                  rows={3}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-navy-primary focus:ring-2 focus:ring-navy-primary/20 text-sm outline-none resize-none"
-                />
-              </div>
 
-              {/* Photo URL Alternative */}
-              <div>
-                <label className="block text-xs font-bold text-navy-primary uppercase tracking-wider mb-1.5">
-                  Atau URL Gambar Langsung
-                </label>
-                <input
-                  type="text"
-                  value={formData.photo_url}
-                  onChange={(e) => {
-                    setFormData({ ...formData, photo_url: e.target.value });
-                    setPreviewPhoto(e.target.value);
-                  }}
-                  placeholder="https://... atau data:image..."
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-mono outline-none"
-                />
-              </div>
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <Button
@@ -646,21 +612,7 @@ export const AdminCandidatesPage: React.FC = () => {
                 />
               </div>
 
-              {/* Vision */}
-              <div>
-                <label className="block text-xs font-bold text-navy-primary uppercase tracking-wider mb-1.5">
-                  Visi / Motto Singkat
-                </label>
-                <textarea
-                  value={newCandidateData.vision}
-                  onChange={(e) =>
-                    setNewCandidateData({ ...newCandidateData, vision: e.target.value })
-                  }
-                  placeholder="Visi pengabdian dan komitmen kepemimpinan..."
-                  rows={3}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-navy-primary focus:ring-2 focus:ring-navy-primary/20 text-sm outline-none resize-none"
-                />
-              </div>
+
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <Button

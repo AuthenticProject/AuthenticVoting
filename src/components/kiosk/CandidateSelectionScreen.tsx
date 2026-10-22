@@ -95,14 +95,14 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
 
       {/* Dynamic Candidate Grid: Responsive for 1, 2, 3, 4, 5+ candidates */}
       <div
-        className={`flex-1 grid gap-3 sm:gap-5 lg:gap-6 items-stretch min-h-0 py-1 overflow-y-auto ${
+        className={`flex-1 grid gap-4 sm:gap-6 lg:gap-8 items-center justify-center min-h-0 py-2 overflow-y-auto ${
           candidates.length <= 2
-            ? 'grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto w-full'
+            ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto w-full'
             : candidates.length === 3
-            ? 'grid-cols-1 md:grid-cols-3 w-full'
+            ? 'grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto w-full'
             : candidates.length === 4
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full'
-            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full'
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto w-full'
+            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-w-7xl mx-auto w-full'
         }`}
       >
         {candidates.map((candidate) => {
@@ -112,7 +112,7 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
           const isCardDisabled = isSubmitting || (!!submissionError && !isSelected);
 
           return (
-            <div key={candidate.id} className="h-full">
+            <div key={candidate.id} className="w-full flex justify-center">
               <CandidateCard
                 candidate={candidate}
                 isSelected={isSelected}
