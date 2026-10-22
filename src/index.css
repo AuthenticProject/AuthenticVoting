@@ -62,74 +62,109 @@
 }
 
 /* ====================================================================
-   AUTHENTIC POSTAGE STAMP (PRANGKO) EFFECT & PERFORATED CARD
+   AUTHENTIC VINTAGE POSTAGE STAMP (PRANGKO JADUL BERGERIGI)
    ==================================================================== */
+.bg-voting-kiosk {
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 .stamp-card-container {
   position: relative;
-  filter: drop-shadow(0 8px 20px rgba(10, 37, 64, 0.08));
+  filter: drop-shadow(0 10px 24px rgba(10, 37, 64, 0.12));
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stamp-card-container:hover {
-  filter: drop-shadow(0 14px 28px rgba(10, 37, 64, 0.14));
+  filter: drop-shadow(0 16px 32px rgba(10, 37, 64, 0.2));
 }
 
 .stamp-card-container.is-selected {
-  filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.45)) drop-shadow(0 12px 26px rgba(10, 37, 64, 0.16));
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6)) drop-shadow(0 14px 28px rgba(10, 37, 64, 0.25));
+}
+
+/* Deep Perforated Vintage Stamp Photo Frame (Gerigi Prangko Pos Jadul) */
+.vintage-stamp {
+  position: relative;
+  background-color: #fcfbfa;
+  padding: 10px;
+  /* Lubang perforasi prangko jadul lebih dalam dan bergerigi rapat */
+  --stamp-hole: 7px;
+  --stamp-space: 18px;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.16));
+  
+  -webkit-mask-image: 
+    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, #000 100%);
+  -webkit-mask-size: 
+    var(--stamp-space) 100%,
+    var(--stamp-space) 100%,
+    100% var(--stamp-space),
+    100% var(--stamp-space);
+  -webkit-mask-position: 
+    0 0,
+    0 100%,
+    0 0,
+    100% 0;
+  -webkit-mask-repeat: 
+    repeat-x,
+    repeat-x,
+    repeat-y,
+    repeat-y;
+  -webkit-mask-composite: source-in, source-in, source-in, source-in;
+
+  mask-image: 
+    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, #000 100%),
+    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, #000 100%);
+  mask-size: 
+    var(--stamp-space) 100%,
+    var(--stamp-space) 100%,
+    100% var(--stamp-space),
+    100% var(--stamp-space);
+  mask-position: 
+    0 0,
+    0 100%,
+    0 0,
+    100% 0;
+  mask-repeat: 
+    repeat-x,
+    repeat-x,
+    repeat-y,
+    repeat-y;
+  mask-composite: intersect;
 }
 
 /* Full Perforated Stamp Card Body */
 .stamp-card {
   position: relative;
   background-color: #ffffff;
-  --stamp-size: 14px;
-  --stamp-radius: 4px;
+  --stamp-size: 16px;
+  --stamp-radius: 5px;
   -webkit-mask:
     radial-gradient(circle var(--stamp-radius) at 50% 0, transparent 98%, black 100%) 50% 0 / var(--stamp-size) 100% repeat-x,
     radial-gradient(circle var(--stamp-radius) at 50% 100%, transparent 98%, black 100%) 50% 100% / var(--stamp-size) 100% repeat-x,
     radial-gradient(circle var(--stamp-radius) at 0 50%, transparent 98%, black 100%) 0 50% / 100% var(--stamp-size) repeat-y,
     radial-gradient(circle var(--stamp-radius) at 100% 50%, transparent 98%, black 100%) 100% 50% / 100% var(--stamp-size) repeat-y;
-  -webkit-mask-composite: source-in;
+  -webkit-mask-composite: source-in, source-in, source-in, source-in;
   mask:
     radial-gradient(circle var(--stamp-radius) at 50% 0, transparent 98%, black 100%) 50% 0 / var(--stamp-size) 100% repeat-x,
     radial-gradient(circle var(--stamp-radius) at 50% 100%, transparent 98%, black 100%) 50% 100% / var(--stamp-size) 100% repeat-x,
     radial-gradient(circle var(--stamp-radius) at 0 50%, transparent 98%, black 100%) 0 50% / 100% var(--stamp-size) repeat-y,
     radial-gradient(circle var(--stamp-radius) at 100% 50%, transparent 98%, black 100%) 100% 50% / 100% var(--stamp-size) repeat-y;
-  mask-composite: intersect;
-  border-radius: 4px;
-}
-
-/* Classic Stamp Photo Frame */
-.stamp-frame {
-  position: relative;
-  background: #ffffff;
-  padding: 4px;
-  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.1));
-}
-
-.stamp-border {
-  position: relative;
-  background-color: #ffffff;
-  --stamp-hole: 4px;
-  --stamp-space: 13px;
-  -webkit-mask:
-    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, black 100%) 50% 0 / var(--stamp-space) 100% repeat-x,
-    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, black 100%) 50% 100% / var(--stamp-space) 100% repeat-x,
-    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, black 100%) 0 50% / 100% var(--stamp-space) repeat-y,
-    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, black 100%) 100% 50% / 100% var(--stamp-space) repeat-y;
-  -webkit-mask-composite: source-in;
-  mask:
-    radial-gradient(circle var(--stamp-hole) at 50% 0, transparent 96%, black 100%) 50% 0 / var(--stamp-space) 100% repeat-x,
-    radial-gradient(circle var(--stamp-hole) at 50% 100%, transparent 96%, black 100%) 50% 100% / var(--stamp-space) 100% repeat-x,
-    radial-gradient(circle var(--stamp-hole) at 0 50%, transparent 96%, black 100%) 0 50% / 100% var(--stamp-space) repeat-y,
-    radial-gradient(circle var(--stamp-hole) at 100% 50%, transparent 96%, black 100%) 100% 50% / 100% var(--stamp-space) repeat-y;
   mask-composite: intersect;
 }
 
 .stamp-inner-border {
-  border: 1.5px dashed rgba(212, 175, 55, 0.65);
-  outline: 1.5px solid rgba(28, 28, 30, 0.12);
-  outline-offset: -4px;
+  border: 2px dashed rgba(212, 175, 55, 0.75);
+  outline: 1.5px solid rgba(28, 28, 30, 0.15);
+  outline-offset: -5px;
 }
 
 .stamp-inner-line {

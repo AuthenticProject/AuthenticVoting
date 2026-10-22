@@ -38,7 +38,12 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
   const isDev = !(typeof import.meta !== 'undefined' && import.meta.env?.PROD);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden flex flex-col bg-institutional-light">
+    <div
+      className="relative h-screen w-screen overflow-hidden flex flex-col bg-voting-kiosk bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url('/background.png')` }}
+    >
+      {/* Subtle overlay for optimal contrast and readability */}
+      <div className="absolute inset-0 bg-slate-900/15 pointer-events-none z-0" />
       {/* Kiosk Header */}
       <KioskHeader
         title={election.title}

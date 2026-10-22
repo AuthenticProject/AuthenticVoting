@@ -30,16 +30,16 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-2 shrink-0"
+        className="text-center mb-2 shrink-0 bg-white/80 backdrop-blur-md py-2 px-6 rounded-2xl border border-slate-200/70 shadow-sm max-w-2xl mx-auto"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-gold-accent/15 border border-gold-accent/30 text-navy-primary font-bold text-xs uppercase tracking-wider mb-1">
+        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-gold-accent/20 border border-gold-accent/40 text-navy-primary font-bold text-xs uppercase tracking-wider mb-1">
           Langkah Pemilihan
         </div>
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-navy-primary">
           Pilih Salah Satu Kandidat
         </h2>
-        <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-          Tekan tombol <span className="font-extrabold text-navy-primary bg-gold-accent/25 px-2 py-0.5 rounded border border-gold-accent/40">PILIH</span> pada kandidat untuk langsung merekam suara Anda.
+        <p className="text-xs sm:text-sm text-slate-700 mt-0.5 font-medium">
+          Tekan tombol <span className="font-extrabold text-navy-primary bg-gold-accent/30 px-2 py-0.5 rounded border border-gold-accent/50">PILIH</span> pada kandidat untuk langsung merekam suara Anda.
         </p>
       </motion.div>
 

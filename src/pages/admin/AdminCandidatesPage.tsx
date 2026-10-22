@@ -479,16 +479,16 @@ export const AdminCandidatesPage: React.FC = () => {
                 />
               </div>
 
-              {/* Role / Title */}
+              {/* Role / Region (Daerah) */}
               <div>
                 <label className="block text-xs font-bold text-navy-primary uppercase tracking-wider mb-1.5">
-                  Jabatan / Keterangan
+                  Daerah / Asal Konsulat
                 </label>
                 <input
                   type="text"
                   value={formData.title_or_role}
                   onChange={(e) => setFormData({ ...formData, title_or_role: e.target.value })}
-                  placeholder="Contoh: Calon Jendral Kehormatan"
+                  placeholder="Contoh: Jawa Timur / Ponorogo"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-navy-primary focus:ring-2 focus:ring-navy-primary/20 text-sm outline-none"
                 />
               </div>
@@ -630,10 +630,10 @@ export const AdminCandidatesPage: React.FC = () => {
                 />
               </div>
 
-              {/* Role / Title */}
+              {/* Role / Region (Daerah) */}
               <div>
                 <label className="block text-xs font-bold text-navy-primary uppercase tracking-wider mb-1.5">
-                  Jabatan / Keterangan
+                  Daerah / Asal Konsulat
                 </label>
                 <input
                   type="text"
@@ -641,7 +641,7 @@ export const AdminCandidatesPage: React.FC = () => {
                   onChange={(e) =>
                     setNewCandidateData({ ...newCandidateData, title_or_role: e.target.value })
                   }
-                  placeholder="Contoh: Calon Jendral 5102"
+                  placeholder="Contoh: Jawa Timur / Ponorogo"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-navy-primary focus:ring-2 focus:ring-navy-primary/20 text-sm outline-none"
                 />
               </div>

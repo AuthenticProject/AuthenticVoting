@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, User, Check } from 'lucide-react';
+import { Loader2, User, Check, MapPin } from 'lucide-react';
 import type { Candidate } from '../../types/election';
 
 interface CandidateCardProps {
@@ -30,7 +30,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
 
   return (
     <motion.div
-      whileHover={!disabled && !isSubmitting ? { y: -5, scale: 1.015 } : undefined}
+      whileHover={!disabled && !isSubmitting ? { y: -6, scale: 1.018 } : undefined}
       whileTap={!disabled && !isSubmitting ? { scale: 0.985 } : undefined}
       onClick={handleClick}
       className={`
@@ -42,7 +42,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
       role="button"
       tabIndex={disabled || isSubmitting ? -1 : 0}
       aria-pressed={isSelected}
-      aria-label={`Pilih Kandidat nomor urut ${formattedNumber}, ${candidate.name}`}
+      aria-label={`Pilih Kandidat ${candidate.name}, Daerah ${candidate.title_or_role || 'Daerah'}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -50,47 +50,28 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         }
       }}
     >
-      {/* Authentic Stamp Perforated Card Body (Tepi Bergerigi Prangko) */}
+      {/* Outer Card Wrapper with Vintage Filateli Border */}
       <div
         className={`
-          stamp-card flex flex-col justify-between h-full p-2.5 sm:p-3.5
+          stamp-card flex flex-col justify-between h-full p-3 sm:p-4
           transition-all duration-200 border-2
           ${
             isSelected
-              ? 'border-gold-accent bg-gradient-to-b from-amber-50/80 via-white to-amber-50/50 shadow-inner'
-              : 'border-slate-300/90 hover:border-gold-accent bg-[#fefcf8]'
+              ? 'border-gold-accent bg-gradient-to-b from-amber-50/90 via-white to-amber-50/70 shadow-lg'
+              : 'border-slate-300/80 hover:border-gold-accent bg-white/95 backdrop-blur-sm'
           }
         `}
       >
-        {/* Inner Stamp Engraving Border with Vintage Guilloche Feel */}
-        <div className="relative flex flex-col justify-between h-full border-1.5 border-dashed border-navy-primary/20 rounded p-2.5 sm:p-3 bg-white/85">
+        {/* Inner Card Container */}
+        <div className="relative flex flex-col justify-between h-full">
           <div>
-            {/* Top Header: Candidate Number & Authentic Postage Stamp Badges */}
-            <div className="relative flex items-center justify-between pb-2.5 mb-2.5 border-b border-dashed border-slate-200">
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                <div
-                  className={`
-                    w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-black text-base sm:text-lg transition-all shadow-xs
-                    ${
-                      isSelected
-                        ? 'bg-gradient-to-br from-gold-accent to-gold-dark text-navy-primary border border-gold-light'
-                        : 'bg-navy-primary text-gold-accent border border-gold-accent/30'
-                    }
-                  `}
-                >
-                  {formattedNumber}
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gold-dark">
-                    PRANGKO RESMI
-                  </span>
-                  <span className="text-xs font-black text-navy-primary tracking-tight">
-                    Kandidat #{formattedNumber}
-                  </span>
-                </div>
-              </div>
+            {/* Top Status & Indicator (Simplified and Clean) */}
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-dashed border-slate-200">
+              <span className="text-[11px] font-black tracking-wider text-navy-primary uppercase flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-gold-accent" />
+                KANDIDAT #{formattedNumber}
+              </span>
 
-              {/* Status Badge */}
               {isCurrentSubmitting ? (
                 <div className="flex items-center gap-1 px-2.5 py-0.5 bg-gold-accent/20 text-navy-primary font-bold text-[11px] rounded-full border border-gold-accent/40 animate-pulse">
                   <Loader2 className="w-3 h-3 animate-spin text-gold-dark" />
@@ -98,80 +79,73 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
                 </div>
               ) : isSelected ? (
                 <div className="flex items-center gap-1 px-2.5 py-0.5 bg-gold-accent text-navy-primary font-bold text-[11px] rounded-full shadow-xs">
-                  <Check className="w-3 h-3 stroke-[3]" />
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
                   <span>Dipilih</span>
                 </div>
-              ) : (
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">
-                  Edisi Pemilihan
-                </div>
-              )}
+              ) : null}
             </div>
 
-            {/* Candidate Photo Section - Inner Commemorative Stamp Frame */}
-            <div className="p-2 sm:p-2.5 bg-slate-50/80 rounded-lg border border-slate-100 flex items-center justify-center mb-2.5">
-              <div className="stamp-frame w-full max-w-[280px]">
-                <div className="stamp-border p-1.5 sm:p-2 bg-white">
-                  <div className="relative w-full aspect-[4/4.2] sm:aspect-[4/3.9] bg-slate-100 overflow-hidden flex items-center justify-center stamp-inner-border">
-                    {!imgError ? (
-                      <img
-                        src={candidate.photo_url}
-                        alt={candidate.name}
-                        onError={() => setImgError(true)}
-                        className={`w-full h-full object-cover object-top transition-transform duration-300 ${
-                          isSelected ? 'scale-105' : 'hover:scale-102'
-                        }`}
-                        loading="eager"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-4">
-                        <User className="w-16 h-16 text-slate-400 mb-2 stroke-[1.5]" />
-                        <span className="text-xs font-medium text-slate-600">Foto Resmi</span>
-                      </div>
-                    )}
-
-                    {/* Commemorative Postmark Seal (Cap Pos Prangko) */}
-                    <div className="absolute top-2 right-2 pointer-events-none select-none opacity-85">
-                      <div className="w-11 h-11 rounded-full border-2 border-dashed border-gold-dark/80 flex flex-col items-center justify-center text-[7px] font-black text-navy-primary -rotate-12 bg-white/60 backdrop-blur-[2px] shadow-xs">
-                        <span className="tracking-tighter">RESMI</span>
-                        <span className="text-[6px] text-gold-dark font-extrabold tracking-widest">5102</span>
-                      </div>
+            {/* BIG VINTAGE POSTAGE STAMP PHOTO (Foto Prangko Jadul Gede & Bergerigi) */}
+            <div className="flex items-center justify-center w-full my-1">
+              <div className="vintage-stamp w-full">
+                {/* Stamp Inner Border Engraving */}
+                <div className="relative w-full aspect-[4/4.8] sm:aspect-[4/4.6] bg-slate-100 overflow-hidden flex items-center justify-center stamp-inner-border rounded-xs">
+                  {!imgError ? (
+                    <img
+                      src={candidate.photo_url}
+                      alt={candidate.name}
+                      onError={() => setImgError(true)}
+                      className={`w-full h-full object-cover object-top transition-transform duration-300 ${
+                        isSelected ? 'scale-105' : 'hover:scale-102'
+                      }`}
+                      loading="eager"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-4">
+                      <User className="w-20 h-20 text-slate-400 mb-2 stroke-[1.5]" />
+                      <span className="text-xs font-semibold text-slate-600">Foto Kandidat</span>
                     </div>
+                  )}
 
-                    {/* Stamp Denomination Tag */}
-                    <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-navy-primary/90 text-gold-accent font-black text-[9px] sm:text-[10px] tracking-wider uppercase border border-gold-accent/40 shadow-xs backdrop-blur-xs">
-                      NOMOR #{formattedNumber}
+                  {/* Vintage Postmark Cancellation Seal (Cap Pos Prangko Antik) */}
+                  <div className="absolute top-2.5 right-2.5 pointer-events-none select-none opacity-90">
+                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-gold-dark/90 flex flex-col items-center justify-center text-[7px] font-black text-navy-primary -rotate-12 bg-white/70 backdrop-blur-[2px] shadow-sm">
+                      <span className="tracking-tighter">RESMI</span>
+                      <span className="text-[7px] text-gold-dark font-black tracking-widest">5102</span>
                     </div>
-
-                    {/* Selection Overlay Tint */}
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-gold-accent/15 border-2 border-gold-accent pointer-events-none" />
-                    )}
                   </div>
+
+                  {/* Stamp Denomination Badge (Nomor Urut Filateli) */}
+                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded bg-navy-primary/95 text-gold-accent font-black text-xs sm:text-sm tracking-wider uppercase border border-gold-accent/50 shadow-md">
+                    #{formattedNumber}
+                  </div>
+
+                  {/* Selection Overlay Tint */}
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-gold-accent/15 border-2 border-gold-accent pointer-events-none" />
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Candidate Information */}
-            <div className="text-center sm:text-left">
-              <h2 className="text-base sm:text-lg font-extrabold text-navy-primary leading-snug line-clamp-2">
+            {/* Candidate Information: HANYA NAMA DAN DAERAH */}
+            <div className="text-center pt-3 pb-2 px-1">
+              <h2 className="text-xl sm:text-2xl font-black text-navy-primary tracking-tight leading-tight line-clamp-2">
                 {candidate.name}
               </h2>
-              {candidate.title_or_role && (
-                <p className="text-xs font-medium text-slate-500 mt-0.5 line-clamp-1">
-                  {candidate.title_or_role}
-                </p>
-              )}
-              {candidate.vision && (
-                <p className="text-xs text-slate-600 mt-2 italic line-clamp-2 bg-amber-50/40 p-2 rounded border border-dashed border-gold-accent/30 text-left">
-                  "{candidate.vision}"
-                </p>
-              )}
+              <div className="mt-2 flex items-center justify-center">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold bg-amber-50 text-gold-dark border border-gold-accent/40 shadow-xs">
+                  <MapPin className="w-3.5 h-3.5 text-gold-dark shrink-0" />
+                  <span className="truncate max-w-[240px]">
+                    {candidate.title_or_role?.trim() || 'Konsulat / Daerah'}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Large Touchscreen "PILIH" Button */}
-          <div className="mt-3 pt-2.5 border-t border-dashed border-slate-200">
+          <div className="mt-3 pt-2 border-t border-dashed border-slate-200">
             <button
               type="button"
               disabled={disabled || isSubmitting}
