@@ -35,8 +35,8 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
         <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-gold-accent/20 border border-gold-accent/40 text-navy-primary font-bold text-xs uppercase tracking-wider mb-1">
           Langkah Pemilihan
         </div>
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-navy-primary">
-          Pilih Salah Satu Kandidat
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-navy-primary tracking-tight">
+          Who will be the next knight?
         </h2>
         <p className="text-xs sm:text-sm text-slate-700 mt-0.5 font-medium">
           Tekan tombol <span className="font-extrabold text-navy-primary bg-gold-accent/30 px-2 py-0.5 rounded border border-gold-accent/50">PILIH</span> pada kandidat untuk langsung merekam suara Anda.
@@ -93,9 +93,9 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
         </motion.div>
       )}
 
-      {/* Dynamic Candidate Grid: Responsive for 1, 2, 3, 4, 5+ candidates */}
+      {/* Dynamic Candidate Grid: Responsive for 1, 2, 3, 4, 5+ candidates with identical card sizing */}
       <div
-        className={`flex-1 grid gap-4 sm:gap-6 lg:gap-8 items-center justify-center min-h-0 py-2 overflow-y-auto ${
+        className={`flex-1 grid gap-4 sm:gap-6 lg:gap-8 items-stretch justify-center min-h-0 py-2 overflow-y-auto ${
           candidates.length <= 2
             ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto w-full'
             : candidates.length === 3
@@ -112,7 +112,7 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
           const isCardDisabled = isSubmitting || (!!submissionError && !isSelected);
 
           return (
-            <div key={candidate.id} className="w-full flex justify-center">
+            <div key={candidate.id} className="w-full h-full flex justify-center">
               <CandidateCard
                 candidate={candidate}
                 isSelected={isSelected}

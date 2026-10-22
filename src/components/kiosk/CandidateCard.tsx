@@ -34,7 +34,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
       whileTap={!disabled && !isSubmitting ? { scale: 0.985 } : undefined}
       onClick={handleClick}
       className={`
-        stamp-card-container relative w-full max-w-[340px] sm:max-w-[360px] mx-auto flex flex-col justify-between
+        stamp-card-container relative w-full max-w-[340px] sm:max-w-[360px] h-full flex flex-col justify-between
         cursor-pointer select-none transition-transform duration-200
         ${isSelected ? 'is-selected' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
@@ -50,10 +50,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         }
       }}
     >
-      {/* Outer Card Wrapper with Vintage Filateli Border */}
+      {/* Outer Card Wrapper with Vintage Filateli Border - Identical height for all cards */}
       <div
         className={`
-          stamp-card flex flex-col justify-between p-3.5 sm:p-4 rounded-xl
+          stamp-card flex flex-col justify-between h-full p-3.5 sm:p-4 rounded-xl
           transition-all duration-200 border-2 shadow-card
           ${
             isSelected
@@ -63,7 +63,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         `}
       >
         {/* Inner Card Container */}
-        <div className="relative flex flex-col justify-between">
+        <div className="relative flex flex-col justify-between h-full">
           <div>
             {/* Top Status & Indicator (Simplified and Clean) */}
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-dashed border-slate-200">
@@ -85,11 +85,11 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
               ) : null}
             </div>
 
-            {/* BIG VINTAGE POSTAGE STAMP PHOTO (Foto Prangko Jadul Gede & Bergerigi) */}
+            {/* BIG VINTAGE POSTAGE STAMP PHOTO (Foto Prangko Jadul Gede & Bergerigi - Fixed Aspect Ratio) */}
             <div className="flex items-center justify-center w-full my-1">
               <div className="vintage-stamp w-full">
                 {/* Stamp Inner Border Engraving */}
-                <div className="relative w-full aspect-[4/4.8] sm:aspect-[4/4.6] bg-slate-100 overflow-hidden flex items-center justify-center stamp-inner-border rounded-xs">
+                <div className="relative w-full aspect-[4/4.5] bg-slate-100 overflow-hidden flex items-center justify-center stamp-inner-border rounded-xs">
                   {!imgError ? (
                     <img
                       src={candidate.photo_url}
@@ -128,15 +128,19 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
               </div>
             </div>
 
-            {/* Candidate Information: HANYA NAMA DAN DAERAH */}
-            <div className="text-center pt-3 pb-2 px-1">
-              <h2 className="text-xl sm:text-2xl font-black text-navy-primary tracking-tight leading-tight line-clamp-2">
-                {candidate.name}
-              </h2>
-              <div className="mt-2 flex items-center justify-center">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold bg-amber-50 text-gold-dark border border-gold-accent/40 shadow-xs">
+            {/* Candidate Information: Locked container heights to prevent any sizing discrepancies */}
+            <div className="text-center pt-2.5 pb-1 px-1 flex flex-col items-center">
+              {/* Nama Kandidat dengan tinggi tetap agar nama 1 baris & 2 baris seimbang */}
+              <div className="h-[54px] sm:h-[58px] flex items-center justify-center w-full">
+                <h2 className="text-lg sm:text-xl font-black text-navy-primary tracking-tight leading-snug line-clamp-2 text-center">
+                  {candidate.name}
+                </h2>
+              </div>
+              {/* Daerah Kandidat dengan tinggi tetap */}
+              <div className="h-[32px] flex items-center justify-center mt-1 w-full">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-gold-dark border border-gold-accent/40 shadow-xs">
                   <MapPin className="w-3.5 h-3.5 text-gold-dark shrink-0" />
-                  <span className="truncate max-w-[240px]">
+                  <span className="truncate max-w-[220px]">
                     {candidate.title_or_role?.trim() || 'Konsulat / Daerah'}
                   </span>
                 </span>
