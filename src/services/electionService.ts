@@ -268,8 +268,61 @@ export class ElectionService {
     return updatedList;
   }
 
+  reorderCandidates(candidateIds: string[]): Candidate[] {
+    const election = this.getStoredElection();
+    if (election.status !== 'draft') {
+      throw new Error('Data kandidat terkunci. Pengurutan hanya diperbolehkan saat status DRAFT.');
+    }
+
+    const currentList = this.getStoredCandidates();
+    const ordered: Candidate[] = [];
+
+    candidateIds.forEach((id, index) => {
+      const found = currentList.find((c) => c.id === id);
+      if (found) {
+        ordered.push({
+          ...found,
+          candidate_number: index + 1,
+        });
+      }
+    });
+
+    // Add any remaining candidates not in candidateIds
+    currentList.forEach((c) => {
+      if (!ordered.some((oc) => oc.id === c.id)) {
+        ordered.push({
+          ...c,
+          candidate_number: ordered.length + 1,
+        });
+      }
+    });
+
+    this.saveCandidates(ordered);
+    return ordered;
+  }
+
   getTotalVotesCount(): number {
     return this.getStoredTally().total;
+  }
+
+  /**
+   * Checks if a request_id has already been processed.
+   */
+  isRequestProcessed(requestId: string): boolean {
+    try {
+      const stored = safeStorage.getItem(PROCESSED_REQUESTS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.includes(requestId);
+        } else if (typeof parsed === 'object' && parsed !== null) {
+          return Boolean(parsed[requestId]);
+        }
+      }
+    } catch {
+      return false;
+    }
+    return false;
   }
 
   /**

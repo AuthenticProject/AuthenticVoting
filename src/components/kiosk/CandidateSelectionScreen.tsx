@@ -93,16 +93,20 @@ export const CandidateSelectionScreen: React.FC<CandidateSelectionScreenProps> =
         </motion.div>
       )}
 
-      {/* Dynamic Candidate Grid: Responsive for 1, 2, 3, 4, 5+ candidates with identical card sizing */}
+      {/* Dynamic Candidate Grid: Responsive for 3, 6, 8, 10+ candidates */}
       <div
-        className={`flex-1 grid gap-4 sm:gap-6 lg:gap-8 items-stretch justify-center min-h-0 py-2 overflow-y-auto ${
+        className={`flex-1 grid gap-4 sm:gap-6 lg:gap-7 items-stretch justify-center min-h-0 py-2 overflow-y-auto ${
           candidates.length <= 2
             ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto w-full'
             : candidates.length === 3
             ? 'grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto w-full'
             : candidates.length === 4
             ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto w-full'
-            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-w-7xl mx-auto w-full'
+            : candidates.length <= 6
+            ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 max-w-5xl mx-auto w-full' // 3 columns x 2 rows
+            : candidates.length <= 8
+            ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 max-w-6xl mx-auto w-full'
+            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 max-w-7xl mx-auto w-full'
         }`}
       >
         {candidates.map((candidate) => {

@@ -3,8 +3,8 @@ import savedCandidates from './saved_candidates.json';
 
 export const MOCK_ELECTION: Election = {
   id: 'el-mubes-2026',
-  title: 'Pemilihan jendral 5102',
-  subtitle: 'Pondok Modern Darussalam Gontor',
+  title: 'PEMILIHAN JENDERAL 5102',
+  subtitle: 'PONDOK MODERN DARUSSALAM GONTOR',
   logo_url: '/logo.png',
   status: 'draft',
   started_at: null,

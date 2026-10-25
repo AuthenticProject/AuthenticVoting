@@ -9,7 +9,7 @@ interface SuccessScreenProps {
 
 export const SuccessScreen: React.FC<SuccessScreenProps> = ({
   onFinish,
-  autoReturnSeconds = 1,
+  autoReturnSeconds = 2,
 }) => {
   const [secondsRemaining, setSecondsRemaining] = useState(autoReturnSeconds);
 

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { Candidate, Election, KioskStep } from '../types/election';
 import { useElection } from './useElection';
+import { kioskSessionService } from '../services/kioskSessionService';
 
 export const useVoteSession = () => {
   const {
@@ -15,6 +16,9 @@ export const useVoteSession = () => {
   const [requestId, setRequestId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [isTabletAuthorized, setIsTabletAuthorized] = useState<boolean>(() =>
+    kioskSessionService.isTabletAuthorized()
+  );
 
   // Generate unique request UUID for voting interaction idempotency
   const generateRequestId = (): string => {
@@ -24,20 +28,32 @@ export const useVoteSession = () => {
     return `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   };
 
+  // Authorize this tablet
+  const authorizeTablet = useCallback((pin: string) => {
+    const res = kioskSessionService.authorizeTablet(pin);
+    if (res.success) {
+      setIsTabletAuthorized(true);
+    }
+    return res;
+  }, []);
+
   // Start new voting interaction from Welcome Screen
   const startVoting = useCallback(() => {
+    if (!isTabletAuthorized) {
+      return;
+    }
     setSelectedCandidate(null);
     setSubmissionError(null);
     setIsSubmitting(false);
     setRequestId(generateRequestId());
     setCurrentStep('selection');
-  }, []);
+  }, [isTabletAuthorized]);
 
-  // Direct candidate submission from Selection Screen (No confirmation screen)
+  // Direct candidate submission from Selection Screen (No confirmation dialog, single tap)
   const submitCandidateVote = useCallback(async (candidate: Candidate) => {
     if (isSubmitting) return;
 
-    // If there is an unresolved submission error, prevent switching candidates
+    // If there is an unresolved submission error, prevent switching candidates during retry
     if (submissionError && selectedCandidate && selectedCandidate.id !== candidate.id) {
       return;
     }
@@ -54,7 +70,7 @@ export const useVoteSession = () => {
 
     try {
       // Minimal visual feedback latency
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 80));
 
       const result = await recordVote(candidate.id, currentRequestId);
 
@@ -77,13 +93,13 @@ export const useVoteSession = () => {
     await submitCandidateVote(selectedCandidate);
   }, [selectedCandidate, isSubmitting, submitCandidateVote]);
 
-  // Reset session for next voter in queue: keeps the kiosk on candidate selection screen
+  // Reset session for next voter in queue: RETURNS AUTOMATICALLY TO WELCOME SCREEN
   const nextVoter = useCallback(() => {
     setSelectedCandidate(null);
     setRequestId(generateRequestId());
     setIsSubmitting(false);
     setSubmissionError(null);
-    setCurrentStep('selection');
+    setCurrentStep('welcome'); // Return to SCREEN 1 (Welcome) for consecutive voters
   }, []);
 
   // Full reset back to welcome screen (called on manual cancel or if election closed)
@@ -94,17 +110,6 @@ export const useVoteSession = () => {
     setSubmissionError(null);
     setCurrentStep('welcome');
   }, []);
-
-  // Auto-advance to candidate selection screen when election is active
-  useState(() => {
-    if (election.status === 'active') {
-      setSelectedCandidate(null);
-      setSubmissionError(null);
-      setIsSubmitting(false);
-      setRequestId(generateRequestId());
-      setCurrentStep('selection');
-    }
-  });
 
   // Toggle election status for QA / testing screen states
   const toggleElectionStatusForTesting = useCallback((status: Election['status']) => {
@@ -119,6 +124,8 @@ export const useVoteSession = () => {
     requestId,
     isSubmitting,
     submissionError,
+    isTabletAuthorized,
+    authorizeTablet,
     startVoting,
     submitCandidateVote,
     retryVote,

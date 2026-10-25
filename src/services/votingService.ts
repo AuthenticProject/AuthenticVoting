@@ -68,11 +68,14 @@ export class VotingService {
 
     // 2. Mode Praktis: Simpan langsung ke penyimpanan lokal (pasti berhasil)
     try {
+      const alreadyProcessed = mockElectionService.isRequestProcessed(requestId);
       mockElectionService.recordVote(candidateId, requestId);
       return {
         success: true,
-        message: 'Suara Anda berhasil disimpan dan dihitung.',
-        idempotent: false,
+        message: alreadyProcessed
+          ? 'Suara Anda telah tercatat sebelumnya (idempotent).'
+          : 'Suara Anda berhasil disimpan dan dihitung.',
+        idempotent: alreadyProcessed,
       };
     } catch (err) {
       return {

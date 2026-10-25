@@ -9,11 +9,21 @@ export default {
       colors: {
         primary: '#1C1C1E',
         darkGrey: '#1C1C1E',
+        surface: '#353539',
+        offWhite: '#F5F5F2',
+        gontor: {
+          primary: '#1C1C1E',
+          secondary: '#29292D',
+          surface: '#353539',
+          gold: '#D4AF37',
+          softGold: '#E6C76B',
+          offWhite: '#F5F5F2',
+        },
         navy: {
           900: '#141416',
           primary: '#1C1C1E',
-          secondary: '#2C2C2E',
-          surface: '#242426',
+          secondary: '#29292D',
+          surface: '#353539',
           light: '#3A3A3C',
         },
         gold: {
@@ -22,7 +32,8 @@ export default {
           100: '#F9F5EB',
           200: '#EFE5C6',
           accent: '#D4AF37',
-          light: '#E5C158',
+          soft: '#E6C76B',
+          light: '#E6C76B',
           dark: '#B08D23',
           glow: 'rgba(212, 175, 55, 0.25)',
         },

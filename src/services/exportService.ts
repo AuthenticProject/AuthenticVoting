@@ -271,6 +271,126 @@ export class ExportService {
       return { success: false, error: err instanceof Error ? err.message : 'Gagal menghasilkan berkas Excel.' };
     }
   }
+
+  /**
+   * Generates a PDF report for a specific Announcement Session
+   */
+  exportSessionToPdf(
+    session: { name: string; selection_method: string; candidate_limit: number },
+    candidates: Array<{ candidate: { candidate_number: number; name: string; title_or_role?: string }; voteCount: number; percentage: number; rank: number }>,
+    electionTitle = 'PEMILIHAN JENDRAL 5102'
+  ): { success: boolean; error?: string } {
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      // Top Institutional Accent Bar
+      doc.setFillColor(28, 28, 30); // Primary Dark Grey
+      doc.rect(0, 0, pageWidth, 8, 'F');
+      doc.setFillColor(212, 175, 55); // Gold Accent
+      doc.rect(0, 8, pageWidth, 2, 'F');
+
+      // Title & Header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(28, 28, 30);
+      doc.text(electionTitle, pageWidth / 2, 22, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.setTextColor(212, 175, 55);
+      doc.text(`BERITA ACARA SESI: ${session.name.toUpperCase()}`, pageWidth / 2, 29, { align: 'center' });
+
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.5);
+      doc.line(14, 33, pageWidth - 14, 33);
+
+      const tableData = candidates.map((item) => [
+        `Peringkat #${item.rank}`,
+        `No. 0${item.candidate.candidate_number}`,
+        item.candidate.name + (item.candidate.title_or_role ? `\n(${item.candidate.title_or_role})` : ''),
+        `${item.voteCount} Suara`,
+        `${item.percentage.toFixed(2)}%`,
+      ]);
+
+      autoTable(doc, {
+        startY: 42,
+        head: [['Peringkat', 'No. Urut', 'Nama Lengkap Kandidat', 'Perolehan Suara', 'Persentase']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [28, 28, 30],
+          textColor: [212, 175, 55],
+          fontSize: 9,
+          fontStyle: 'bold',
+          halign: 'center',
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [30, 41, 59],
+        },
+        columnStyles: {
+          0: { halign: 'center', cellWidth: 26 },
+          1: { halign: 'center', cellWidth: 22 },
+          2: { cellWidth: 80 },
+          3: { halign: 'center', cellWidth: 26 },
+          4: { halign: 'center', cellWidth: 26 },
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+        doc.save(`Pengumuman_${session.name.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
+      }
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghasilkan berkas PDF acara.' };
+    }
+  }
+
+  /**
+   * Generates an Excel report for a specific Announcement Session
+   */
+  exportSessionToExcel(
+    session: { name: string; selection_method: string },
+    candidates: Array<{ candidate: { candidate_number: number; name: string; title_or_role?: string }; voteCount: number; percentage: number; rank: number }>,
+    electionTitle = 'PEMILIHAN JENDRAL 5102'
+  ): { success: boolean; error?: string } {
+    try {
+      const rows = candidates.map((item) => [
+        item.rank,
+        item.candidate.candidate_number,
+        item.candidate.name,
+        item.candidate.title_or_role || '-',
+        item.voteCount,
+        `${item.percentage.toFixed(2)}%`,
+      ]);
+
+      const worksheetData = [
+        [electionTitle],
+        [`Sesi Acara: ${session.name}`],
+        [`Metode Seleksi: ${session.selection_method}`],
+        [],
+        ['Peringkat', 'No. Urut', 'Nama Lengkap Kandidat', 'Daerah/Konsulat', 'Perolehan Suara', 'Persentase'],
+        ...rows,
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Pengumuman');
+
+      if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+        XLSX.writeFile(workbook, `Pengumuman_${session.name.replace(/\s+/g, '_')}_${Date.now()}.xlsx`);
+      }
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghasilkan berkas Excel acara.' };
+    }
+  }
 }
 
 export const exportService = new ExportService();

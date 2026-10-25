@@ -142,9 +142,14 @@ export class ResultsRepository {
 
   /**
    * Fetches full final results breakdown.
+   * Strictly returns null if election is not closed!
    */
   async getFinalResults(electionId: string, candidates: Candidate[] = []): Promise<ElectionResultsSummary | null> {
-    return this.getLiveResults(electionId, candidates);
+    const el = mockElectionService.getElection();
+    if (el.status !== 'closed') {
+      return null;
+    }
+    return this.getLiveResults(electionId, candidates, 'closed', el.started_at);
   }
 
   /**

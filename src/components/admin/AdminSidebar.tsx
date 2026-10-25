@@ -8,6 +8,9 @@ import {
   ExternalLink,
   ShieldCheck,
   X,
+  Trophy,
+  Tablet,
+  Tv,
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { useElection } from '../../hooks/useElection';
@@ -17,30 +20,77 @@ interface AdminSidebarProps {
   onClose: () => void;
 }
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
-  const { election } = useElection();
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  end?: boolean;
+}
 
-  const navItems = [
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
+  const { election, announcementSessions } = useElection();
+
+  const sections: NavSection[] = [
     {
-      to: '/admin',
-      end: true,
-      label: 'Dashboard',
-      icon: LayoutDashboard,
+      title: 'Dashboard',
+      items: [
+        {
+          to: '/admin',
+          end: true,
+          label: 'Overview & Monitoring',
+          icon: LayoutDashboard,
+        },
+      ],
     },
     {
-      to: '/admin/candidates',
-      label: 'Kandidat',
-      icon: Users,
+      title: 'Pemilihan',
+      items: [
+        {
+          to: '/admin/candidates',
+          label: 'Kandidat',
+          icon: Users,
+        },
+        {
+          to: '/admin/settings',
+          label: 'Pengaturan Pemilihan',
+          icon: Settings,
+        },
+        {
+          to: '/admin/kiosk',
+          label: 'Tablet Voting',
+          icon: Tablet,
+        },
+      ],
     },
     {
-      to: '/admin/settings',
-      label: 'Pengaturan Voting',
-      icon: Settings,
+      title: 'Pengumuman',
+      items: [
+        {
+          to: '/admin/announcements',
+          label: 'Manajemen Acara',
+          icon: Trophy,
+        },
+        {
+          to: announcementSessions.length > 0 ? `/admin/announcement/${announcementSessions[0].id}` : '/admin/announcement',
+          label: 'Presentasi Proyektor',
+          icon: Tv,
+        },
+      ],
     },
     {
-      to: '/admin/results',
-      label: 'Hasil Akhir',
-      icon: Award,
+      title: 'Hasil',
+      items: [
+        {
+          to: '/admin/results',
+          label: 'Hasil Lengkap & Ekspor',
+          icon: Award,
+        },
+      ],
     },
   ];
 
@@ -51,16 +101,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
   }[election.status];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-navy-primary text-white border-r border-navy-light/40">
+    <div className="flex flex-col h-full bg-[#1C1C1E] text-white border-r border-[#29292D]">
       {/* Brand Header */}
-      <div className="p-6 border-b border-navy-light/30 flex items-center justify-between">
+      <div className="p-5 border-b border-[#29292D] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Logo src={election.logo_url} size="sm" />
           <div>
-            <h2 className="text-base font-extrabold tracking-tight text-white leading-tight">
-              E-Voting Admin
+            <h2 className="text-sm font-black tracking-tight text-white leading-tight">
+              Pemilihan Jenderal 5102
             </h2>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-1">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusBadge.bg}`}>
                 {statusBadge.label}
               </span>
@@ -76,49 +126,55 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
         </button>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-        <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Menu Utama
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={onClose}
-              className={({ isActive }) => `
-                flex items-center gap-3 px-3.5 py-3 rounded-xl font-semibold text-sm transition-all duration-150
-                ${
-                  isActive
-                    ? 'bg-gold-accent text-navy-900 font-extrabold shadow-md'
-                    : 'text-slate-300 hover:text-white hover:bg-navy-secondary'
-                }
-              `}
-            >
-              <Icon className="w-5 h-5 shrink-0" />
-              <span>{item.label}</span>
-            </NavLink>
-          );
-        })}
+      {/* Navigation Links Sections */}
+      <nav className="flex-1 p-3.5 space-y-4 overflow-y-auto">
+        {sections.map((sec, secIdx) => (
+          <div key={secIdx}>
+            <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              {sec.title}
+            </div>
+            <div className="space-y-1 mt-1">
+              {sec.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    onClick={onClose}
+                    className={({ isActive }) => `
+                      flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs transition-all duration-150
+                      ${
+                        isActive
+                          ? 'bg-gold-accent text-navy-primary font-black shadow-sm'
+                          : 'text-slate-300 hover:text-white hover:bg-[#29292D]'
+                      }
+                    `}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Footer / Quick Kiosk Link */}
-      <div className="p-4 border-t border-navy-light/30 space-y-2">
+      <div className="p-4 border-t border-[#29292D] space-y-2">
         <Link
           to="/vote"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-navy-secondary hover:bg-navy-light text-gold-light text-xs font-bold border border-gold-accent/30 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#29292D] hover:bg-[#353539] text-gold-accent text-xs font-bold border border-gold-accent/30 transition-colors"
         >
           <ExternalLink className="w-4 h-4" />
           <span>Buka Bilik Suara (/vote)</span>
         </Link>
-        <div className="flex items-center justify-center gap-1 text-[11px] text-slate-400">
+        <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-gold-accent" />
-          <span>Sistem Pemilihan Resmi</span>
+          <span>Kiosk Tablet Tunggal</span>
         </div>
       </div>
     </div>

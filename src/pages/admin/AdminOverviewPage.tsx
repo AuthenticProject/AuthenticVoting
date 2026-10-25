@@ -14,6 +14,7 @@ import {
   Database,
   RotateCcw,
   Trophy,
+  Lock,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
@@ -216,7 +217,7 @@ export const AdminOverviewPage: React.FC = () => {
               Jumlah Kandidat
             </p>
             <h3 className="text-3xl sm:text-4xl font-extrabold text-navy-primary">
-              3
+              {candidates.length}
             </h3>
             <p className="text-xs text-slate-500 mt-1">
               {election.status === 'draft' ? 'Dapat diedit' : 'Terkunci permanen'}
@@ -256,123 +257,157 @@ export const AdminOverviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* LIVE CANDIDATE TALLIES (REAL-TIME SUARA KANDIDAT) */}
+      {/* REAL-TIME MONITORING & CANDIDATE BREAKDOWN (Phase 8 & 9) */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-xl sm:text-2xl font-extrabold text-navy-primary">
-                Perolehan Suara Kandidat Real-Time
+                {election.status === 'closed'
+                  ? 'Hasil Akhir Tabulasi Suara'
+                  : 'Monitoring Aktivitas Pemungutan Suara'}
               </h3>
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
-              </span>
+              {election.status === 'active' && (
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                </span>
+              )}
             </div>
             <p className="text-xs sm:text-sm text-slate-500">
-              Diperbarui secara langsung setiap kali ada suara masuk dari bilik suara tanpa perlu refresh.
+              {election.status === 'active'
+                ? 'Kerahasiaan Suara: Perolehan per kandidat dirahasiakan selama voting berlangsung. Total suara masuk tercatat secara real-time.'
+                : 'Perolehan suara resmi seluruh kandidat setelah pemilihan ditutup.'}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live Auto-Sync</span>
+              <span>{election.status === 'active' ? 'Bilik Aktif' : 'Tersinkron'}</span>
             </span>
             <Link
               to="/admin/results"
               className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-navy-primary hover:text-gold-dark transition-colors ml-2"
             >
-              <span>Grafik Lengkap</span>
+              <span>{election.status === 'closed' ? 'Hasil Lengkap' : 'Tabulasi'}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
 
-        {/* Candidate Vote Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {candidateResults.map(({ candidate, voteCount, percentage, isWinner }) => (
-            <div
-              key={candidate.id}
-              className={`rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
-                isWinner && totalVotes > 0
-                  ? 'bg-gradient-to-br from-amber-50/80 to-white border-gold-accent shadow-md shadow-gold-accent/10'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300'
-              }`}
-            >
-              {/* Leader Badge */}
-              {isWinner && totalVotes > 0 && (
-                <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-accent text-navy-primary font-black text-[10px] uppercase tracking-wider shadow-sm">
-                  <Trophy className="w-3 h-3 text-navy-primary" />
-                  <span>Memimpin</span>
-                </div>
-              )}
-
-              <div>
-                {/* Candidate Header with Photo and Number */}
-                <div className="flex items-center gap-3.5 mb-4">
-                  <div className="relative shrink-0">
-                    <div className="stamp-frame p-1">
-                      <div className="stamp-border p-1 bg-white">
-                        <img
-                          src={candidate.photo_url || '/logo.png'}
-                          alt={candidate.name}
-                          className="w-12 h-12 sm:w-14 sm:h-14 object-cover object-top border border-amber-300/60"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = '/logo.png';
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-navy-primary text-gold-accent font-extrabold text-[10px] flex items-center justify-center border border-white shadow-xs z-10">
-                      {candidate.candidate_number}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">
-                      Kandidat #{candidate.candidate_number}
-                    </span>
-                    <h4 className="font-extrabold text-navy-primary text-sm sm:text-base truncate leading-snug">
-                      {candidate.name}
-                    </h4>
-                    <p className="text-xs text-slate-600 truncate mt-0.5">
-                      {candidate.title_or_role || 'Calon Jendral'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Vote Counter Display */}
-                <div className="flex items-baseline justify-between mb-2">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl sm:text-4xl font-black text-navy-primary tracking-tight">
-                      {voteCount}
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-slate-600">
-                      Suara
-                    </span>
-                  </div>
-                  <span className="text-base sm:text-lg font-extrabold text-gold-dark">
-                    {percentage}%
-                  </span>
-                </div>
-
-                {/* Animated Percentage Bar */}
-                <div className="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${Math.max(percentage, voteCount > 0 ? 3 : 0)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600 font-medium">
-                <span>Total keseluruhan</span>
-                <span className="font-bold text-slate-700">{totalVotes} suara masuk</span>
+        {/* If Active: Confidentiality Notice and Candidate Roster */}
+        {election.status === 'active' ? (
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <Lock className="w-5 h-5 text-amber-700 shrink-0" />
+                <span>
+                  <strong>Kerahasiaan Suara Berjalan:</strong> Total suara sah masuk saat ini adalah <strong>{totalVotes} suara</strong>. Hasil perolehan masing-masing kandidat disembunyikan sampai pemungutan suara resmi ditutup.
+                </span>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {candidates.map((cand) => (
+                <div
+                  key={cand.id}
+                  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3"
+                >
+                  <img
+                    src={cand.photo_url || '/logo.png'}
+                    alt={cand.name}
+                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                  />
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-black text-gold-dark bg-gold-accent/20 px-1 rounded">
+                      #{cand.candidate_number}
+                    </span>
+                    <h4 className="text-xs font-bold text-navy-primary truncate">
+                      {cand.name}
+                    </h4>
+                    <span className="text-[11px] text-slate-400 italic">
+                      Suara dirahasiakan
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* When Closed or Draft: Show candidate results cards */
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {candidateResults.map(({ candidate, voteCount, percentage, isWinner }) => (
+              <div
+                key={candidate.id}
+                className={`rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+                  isWinner && totalVotes > 0
+                    ? 'bg-gradient-to-br from-amber-50/80 to-white border-gold-accent shadow-md shadow-gold-accent/10'
+                    : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300'
+                }`}
+              >
+                {/* Leader Badge */}
+                {isWinner && totalVotes > 0 && (
+                  <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-accent text-navy-primary font-black text-[10px] uppercase tracking-wider shadow-sm">
+                    <Trophy className="w-3 h-3 text-navy-primary" />
+                    <span>Pemenang</span>
+                  </div>
+                )}
+
+                <div>
+                  {/* Candidate Header with Photo and Number */}
+                  <div className="flex items-center gap-3.5 mb-4">
+                    <div className="relative shrink-0">
+                      <div className="stamp-frame p-1">
+                        <div className="stamp-border p-1 bg-white">
+                          <img
+                            src={candidate.photo_url || '/logo.png'}
+                            alt={candidate.name}
+                            className="w-12 h-12 sm:w-14 sm:h-14 object-cover object-top border border-amber-300/60"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-black tracking-wider uppercase text-gold-dark bg-gold-accent/20 px-2 py-0.5 rounded-md border border-gold-accent/30 inline-block mb-1">
+                        Kandidat #{String(candidate.candidate_number).padStart(2, '0')}
+                      </span>
+                      <h4 className="text-sm sm:text-base font-extrabold text-navy-primary truncate">
+                        {candidate.name}
+                      </h4>
+                      {candidate.title_or_role && (
+                        <p className="text-xs text-slate-500 font-medium truncate">
+                          {candidate.title_or_role}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Vote Count and Percentage */}
+                  <div className="space-y-2">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl sm:text-3xl font-black text-navy-primary">
+                        {voteCount}{' '}
+                        <span className="text-xs font-bold text-slate-500">Suara</span>
+                      </span>
+                      <span className="text-sm font-extrabold text-navy-primary">
+                        {percentage}%
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* MODAL: Start Election Confirmation */}

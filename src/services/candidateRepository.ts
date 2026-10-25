@@ -88,7 +88,7 @@ export class CandidateRepository {
    */
   async updateCandidate(
     candidateId: string,
-    updates: Partial<Pick<Candidate, 'name' | 'title_or_role' | 'vision' | 'photo_url'>>
+    updates: Partial<Pick<Candidate, 'name' | 'title_or_role' | 'vision' | 'photo_url' | 'candidate_number'>>
   ): Promise<{ success: boolean; error?: string }> {
     // 1. Simpan selalu ke local storage terlebih dahulu agar perubahan langsung aktif
     mockElectionService.updateCandidate(candidateId, updates);
@@ -96,15 +96,20 @@ export class CandidateRepository {
     // 2. Coba sinkronisasi ke Supabase
     if (isSupabaseConfigured && supabase) {
       try {
+        const payload: Record<string, unknown> = {
+          name: updates.name,
+          title_or_role: updates.title_or_role,
+          vision: updates.vision,
+          photo_url: updates.photo_url,
+          updated_at: new Date().toISOString(),
+        };
+        if (updates.candidate_number !== undefined) {
+          payload.candidate_number = updates.candidate_number;
+        }
+
         const { error } = await supabase
           .from('candidates')
-          .update({
-            name: updates.name,
-            title_or_role: updates.title_or_role,
-            vision: updates.vision,
-            photo_url: updates.photo_url,
-            updated_at: new Date().toISOString(),
-          })
+          .update(payload)
           .eq('id', candidateId);
 
         if (error) {
@@ -116,6 +121,28 @@ export class CandidateRepository {
     }
 
     return { success: true };
+  }
+
+  /**
+   * Reorders candidates by IDs
+   */
+  async reorderCandidates(orderedIds: string[]): Promise<Candidate[]> {
+    const updated = mockElectionService.reorderCandidates(orderedIds);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        for (let i = 0; i < orderedIds.length; i++) {
+          await supabase
+            .from('candidates')
+            .update({ candidate_number: i + 1, updated_at: new Date().toISOString() })
+            .eq('id', orderedIds[i]);
+        }
+      } catch (err) {
+        console.warn('Kendala sinkronisasi urutan kandidat ke Supabase:', err);
+      }
+    }
+
+    return updated;
   }
 
   /**
