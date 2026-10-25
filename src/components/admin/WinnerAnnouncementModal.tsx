@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Election, ElectionResultsSummary } from '../../types/election';
 import { Logo } from '../common/Logo';
+import { fireWinnerCannon } from '../../lib/confetti';
 
 interface WinnerAnnouncementModalProps {
   isOpen: boolean;
@@ -27,6 +28,12 @@ export const WinnerAnnouncementModal: React.FC<WinnerAnnouncementModalProps> = (
 }) => {
   const [activeMode, setActiveMode] = useState<'winner' | 'full'>('winner');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fireWinnerCannon();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

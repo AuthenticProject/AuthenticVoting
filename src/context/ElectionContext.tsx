@@ -64,15 +64,40 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         const el = await electionRepository.getElection();
         if (!active) return;
-        setElection(el);
+        setElection((prev) => {
+          if (
+            prev.id === el.id &&
+            prev.status === el.status &&
+            prev.title === el.title &&
+            prev.subtitle === el.subtitle &&
+            prev.logo_url === el.logo_url
+          ) {
+            return prev;
+          }
+          return el;
+        });
 
         const cands = await candidateRepository.getCandidates(el.id);
         if (!active) return;
-        setCandidates(cands);
+        setCandidates((prev) => {
+          if (prev.length !== cands.length) return cands;
+          const isSame = prev.every(
+            (pc, i) =>
+              pc.id === cands[i]?.id &&
+              pc.name === cands[i]?.name &&
+              pc.photo_url === cands[i]?.photo_url &&
+              pc.candidate_number === cands[i]?.candidate_number
+          );
+          return isSame ? prev : cands;
+        });
 
         const sessions = await announcementRepository.getSessions(el.id);
         if (!active) return;
-        setAnnouncementSessions(sessions);
+        setAnnouncementSessions((prev) => {
+          if (prev.length !== sessions.length) return sessions;
+          const isSame = prev.every((ps, i) => ps.id === sessions[i]?.id && ps.name === sessions[i]?.name && ps.announcement_status === sessions[i]?.announcement_status);
+          return isSame ? prev : sessions;
+        });
 
         if (el.status === 'draft') {
           if (!active) return;
@@ -187,6 +212,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateSettings = useCallback(
     async (updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>) => {
+      setElection((prev) => ({ ...prev, ...updates }));
       await electionRepository.updateSettings(election.id, updates);
       await refreshData();
     },
@@ -250,7 +276,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await resetToDraft();
   }, [resetToDraft]);
 
-  const isSettingsLocked = election.status !== 'draft';
+  const isSettingsLocked = false;
   const isCandidatesLocked = election.status !== 'draft';
 
   // Compute dynamic candidate allocation summary

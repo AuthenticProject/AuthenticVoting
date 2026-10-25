@@ -23,7 +23,6 @@ export class ElectionRepository {
 
         if (data) {
           const local = mockElectionService.getElection();
-          const isLegacySupabaseTitle = data.title === 'PEMILIHAN JENDRAL & DEWAN KEHORMATAN';
 
           // Sinkronkan status Supabase ke state lokal agar perangkat kedua langsung mendeteksi status aktif
           const currentStatus = data.status || local.status;
@@ -31,11 +30,15 @@ export class ElectionRepository {
             mockElectionService.setElectionStatus(currentStatus);
           }
 
+          const resolvedTitle = data.title || local.title;
+          const resolvedSubtitle = data.subtitle !== undefined && data.subtitle !== null ? data.subtitle : local.subtitle;
+          const resolvedLogo = data.logo_url || local.logo_url || '/logo.png';
+
           return {
             id: data.id,
-            title: isLegacySupabaseTitle ? local.title : (local.title || data.title),
-            subtitle: isLegacySupabaseTitle ? local.subtitle : (local.subtitle ?? (data.subtitle || '')),
-            logo_url: local.logo_url || (data.logo_url || '/logo.png'),
+            title: resolvedTitle,
+            subtitle: resolvedSubtitle,
+            logo_url: resolvedLogo,
             status: currentStatus,
             started_at: data.started_at || local.started_at,
             closed_at: data.closed_at || local.closed_at,
@@ -53,13 +56,16 @@ export class ElectionRepository {
   }
 
   /**
-   * Update election settings (permitted only while DRAFT)
+   * Update election settings
    */
   async updateSettings(electionId: string, updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>): Promise<{ success: boolean; error?: string }> {
-    mockElectionService.updateElectionSettings(updates);
+    mockElectionService.updateElectionSettings(updates, true);
 
     if (isSupabaseConfigured && supabase) {
       try {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(electionId);
+        const targetId = isUuid ? electionId : '00000000-0000-0000-0000-000000000001';
+
         const { error } = await supabase
           .from('elections')
           .update({
@@ -68,7 +74,7 @@ export class ElectionRepository {
             logo_url: updates.logo_url,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', electionId);
+          .eq('id', targetId);
 
         if (error) {
           console.warn('Catatan sinkronisasi pengaturan Supabase:', error.message);

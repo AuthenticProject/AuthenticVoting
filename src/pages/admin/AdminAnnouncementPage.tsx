@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useElection } from '../../hooks/useElection';
 import { Logo } from '../../components/common/Logo';
+import { fireWinnerCannon, fireGoldConfetti } from '../../lib/confetti';
 
 export const AdminAnnouncementPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId?: string }>();
@@ -118,7 +119,14 @@ export const AdminAnnouncementPage: React.FC = () => {
       setIsRevealing(true);
       setTimeout(() => {
         setIsRevealing(false);
-        setRevealedCount((prev) => prev + 1);
+        const nextCount = revealedCount + 1;
+        setRevealedCount(nextCount);
+        if (nextCount === revealOrder.length) {
+          // Juara 1 / Seluruh kandidat telah terungkap -> Ledakkan konfeti pemenang!
+          fireWinnerCannon();
+        } else {
+          fireGoldConfetti();
+        }
       }, 500);
     }
   };
@@ -131,6 +139,7 @@ export const AdminAnnouncementPage: React.FC = () => {
 
   const handleRevealAll = () => {
     setRevealedCount(revealOrder.length);
+    fireWinnerCannon();
   };
 
   const handleResetReveal = () => {

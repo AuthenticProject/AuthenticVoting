@@ -14,9 +14,11 @@ import {
   Database,
   RotateCcw,
   Trophy,
+  Sparkles,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
+import { fireWinnerCannon } from '../../lib/confetti';
 
 export const AdminOverviewPage: React.FC = () => {
   const {
@@ -80,6 +82,9 @@ export const AdminOverviewPage: React.FC = () => {
     closeElection();
     setShowCloseModal(false);
     setConfirmText('');
+    setTimeout(() => {
+      fireWinnerCannon();
+    }, 300);
   };
 
   return (
@@ -148,15 +153,26 @@ export const AdminOverviewPage: React.FC = () => {
           )}
 
           {election.status === 'closed' && (
-            <Link to="/admin/results">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                variant="primary-navy"
+                variant="primary-gold"
                 size="lg"
-                rightIcon={<ArrowRight className="w-5 h-5" />}
+                leftIcon={<Sparkles className="w-5 h-5 fill-navy-primary stroke-[2.5]" />}
+                onClick={() => fireWinnerCannon()}
+                className="shadow-lg shadow-gold-accent/20 animate-pulse font-extrabold"
               >
-                Lihat Hasil Akhir
+                Rayakan Hasil (Animasi Emas)
               </Button>
-            </Link>
+              <Link to="/admin/results">
+                <Button
+                  variant="primary-navy"
+                  size="lg"
+                  rightIcon={<ArrowRight className="w-5 h-5" />}
+                >
+                  Lihat Hasil Akhir
+                </Button>
+              </Link>
+            </div>
           )}
 
           <Button

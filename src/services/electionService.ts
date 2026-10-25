@@ -122,9 +122,9 @@ export class ElectionService {
     return this.getStoredElection();
   }
 
-  updateElectionSettings(updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>): Election {
+  updateElectionSettings(updates: Partial<Pick<Election, 'title' | 'subtitle' | 'logo_url'>>, force = false): Election {
     const current = this.getStoredElection();
-    if (current.status !== 'draft') {
+    if (!force && current.status !== 'draft') {
       throw new Error('Pengaturan pemilihan hanya dapat diubah saat status DRAFT (sebelum voting dimulai).');
     }
     const updated: Election = {
