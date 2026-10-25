@@ -102,7 +102,7 @@ export const ElectionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (active) {
         void fetchInitialData();
       }
-    }, 2000);
+    }, 1000);
 
     if (isSupabaseConfigured) {
       const unsubElection = electionRepository.subscribeToElectionChanges(election.id, () => {

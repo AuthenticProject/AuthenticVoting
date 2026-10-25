@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, ShieldCheck, Sparkles } from 'lucide-react';
 
@@ -9,25 +9,15 @@ interface SuccessScreenProps {
 
 export const SuccessScreen: React.FC<SuccessScreenProps> = ({
   onFinish,
-  autoReturnSeconds = 2,
+  autoReturnSeconds = 0.8,
 }) => {
-  const [secondsRemaining, setSecondsRemaining] = useState(autoReturnSeconds);
-
   useEffect(() => {
-    // Exact timer for auto-advancing to next voter in queue
-    const timer = setInterval(() => {
-      setSecondsRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          onFinish();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const timer = setTimeout(() => {
+      onFinish();
+    }, Math.round(autoReturnSeconds * 1000));
 
-    return () => clearInterval(timer);
-  }, [onFinish]);
+    return () => clearTimeout(timer);
+  }, [onFinish, autoReturnSeconds]);
 
   return (
     <div className="h-full flex flex-col items-center justify-center py-6 px-4 sm:px-8 max-w-2xl mx-auto w-full text-center">
@@ -83,22 +73,19 @@ export const SuccessScreen: React.FC<SuccessScreenProps> = ({
           <span>Suara Anda telah tersimpan secara resmi, sah, dan terenkripsi di sistem bilik suara.</span>
         </div>
 
-        {/* Auto Return Countdown & Progress Bar */}
+        {/* Auto Return Indicator */}
         <div className="w-full mt-2 flex flex-col items-center gap-3">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
-            <span>Siap untuk pemilih berikutnya dalam</span>
-            <span className="font-extrabold text-navy-primary bg-gold-accent/20 px-2.5 py-0.5 rounded-md border border-gold-accent/40">
-              {secondsRemaining} detik
-            </span>
+            <span>Siap untuk pemilih berikutnya...</span>
           </div>
 
           {/* Animated Gold Progress Bar */}
           <div className="w-full max-w-xs h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
             <motion.div
               className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full"
-              initial={{ width: '100%' }}
-              animate={{ width: `${(secondsRemaining / autoReturnSeconds) * 100}%` }}
-              transition={{ ease: 'linear', duration: 1 }}
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ ease: 'linear', duration: autoReturnSeconds }}
             />
           </div>
         </div>

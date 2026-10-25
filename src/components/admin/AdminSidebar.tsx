@@ -9,8 +9,6 @@ import {
   ShieldCheck,
   X,
   Trophy,
-  Tablet,
-  Tv,
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { useElection } from '../../hooks/useElection';
@@ -33,62 +31,37 @@ interface NavSection {
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
-  const { election, announcementSessions } = useElection();
+  const { election } = useElection();
 
   const sections: NavSection[] = [
     {
-      title: 'Dashboard',
+      title: 'Menu Utama',
       items: [
         {
           to: '/admin',
           end: true,
-          label: 'Overview & Monitoring',
+          label: 'Monitoring Real-Time',
           icon: LayoutDashboard,
         },
-      ],
-    },
-    {
-      title: 'Pemilihan',
-      items: [
         {
           to: '/admin/candidates',
-          label: 'Kandidat',
+          label: 'Data Kandidat',
           icon: Users,
         },
         {
-          to: '/admin/settings',
-          label: 'Pengaturan Pemilihan',
-          icon: Settings,
-        },
-        {
-          to: '/admin/kiosk',
-          label: 'Tablet Voting',
-          icon: Tablet,
-        },
-      ],
-    },
-    {
-      title: 'Pengumuman',
-      items: [
-        {
           to: '/admin/announcements',
-          label: 'Manajemen Acara',
+          label: 'Acara Pengumuman',
           icon: Trophy,
         },
         {
-          to: announcementSessions.length > 0 ? `/admin/announcement/${announcementSessions[0].id}` : '/admin/announcement',
-          label: 'Presentasi Proyektor',
-          icon: Tv,
-        },
-      ],
-    },
-    {
-      title: 'Hasil',
-      items: [
-        {
           to: '/admin/results',
-          label: 'Hasil Lengkap & Ekspor',
+          label: 'Tabulasi & Ekspor',
           icon: Award,
+        },
+        {
+          to: '/admin/settings',
+          label: 'Pengaturan Sistem',
+          icon: Settings,
         },
       ],
     },

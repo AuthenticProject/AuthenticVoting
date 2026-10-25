@@ -380,6 +380,45 @@ export class ElectionService {
   }
 
   /**
+   * Real-time Live Results Calculation.
+   * Returns live per-candidate vote counts and percentages for admin monitoring.
+   */
+  getLiveResults(): ElectionResultsSummary {
+    const election = this.getStoredElection();
+    const candidates = this.getStoredCandidates();
+    const tally = this.getStoredTally();
+    const totalVotes = tally.total;
+
+    const rawTallies = candidates.map((cand) => {
+      let count = tally.byCandidate[cand.id] || 0;
+      const numMatch = cand.candidate_number;
+      const uuid1 = `00000000-0000-0000-0000-00000000001${numMatch}`;
+      const uuid2 = `00000000-0000-0000-0000-00000000000${numMatch}`;
+      const candKey = `cand-0${numMatch}`;
+      const candKey2 = `cand-${numMatch}`;
+      
+      for (const [key, val] of Object.entries(tally.byCandidate)) {
+        if (key !== cand.id && (key === uuid1 || key === uuid2 || key === candKey || key === candKey2 || key === String(numMatch))) {
+          count += val;
+        }
+      }
+
+      return {
+        candidate: cand,
+        voteCount: count,
+      };
+    });
+
+    return calculateElectionResults(
+      rawTallies,
+      totalVotes,
+      election.closed_at ?? null,
+      election.started_at ?? null,
+      election.title
+    );
+  }
+
+  /**
    * Final Results Calculation.
    * STRICT: Returns null if election is NOT closed!
    */
@@ -389,22 +428,7 @@ export class ElectionService {
       return null;
     }
 
-    const candidates = this.getStoredCandidates();
-    const tally = this.getStoredTally();
-    const totalVotes = tally.total;
-
-    const rawTallies = candidates.map((cand) => ({
-      candidate: cand,
-      voteCount: tally.byCandidate[cand.id] || 0,
-    }));
-
-    return calculateElectionResults(
-      rawTallies,
-      totalVotes,
-      election.closed_at ?? null,
-      election.started_at ?? null,
-      election.title
-    );
+    return this.getLiveResults();
   }
 
   /**

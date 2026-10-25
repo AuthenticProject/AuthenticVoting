@@ -14,7 +14,6 @@ import {
   Database,
   RotateCcw,
   Trophy,
-  Lock,
 } from 'lucide-react';
 import { useElection } from '../../hooks/useElection';
 import { Button } from '../../components/common/Button';
@@ -276,7 +275,7 @@ export const AdminOverviewPage: React.FC = () => {
             </div>
             <p className="text-xs sm:text-sm text-slate-500">
               {election.status === 'active'
-                ? 'Kerahasiaan Suara: Perolehan per kandidat dirahasiakan selama voting berlangsung. Total suara masuk tercatat secara real-time.'
+                ? 'Monitoring Real-Time: Perolehan suara masing-masing kandidat terupdate otomatis secara langsung saat pemilih menekan tombol di bilik suara.'
                 : 'Perolehan suara resmi seluruh kandidat setelah pemilihan ditutup.'}
             </p>
           </div>
@@ -284,7 +283,7 @@ export const AdminOverviewPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{election.status === 'active' ? 'Bilik Aktif' : 'Tersinkron'}</span>
+              <span>{election.status === 'active' ? 'Bilik Aktif Real-Time' : 'Tersinkron'}</span>
             </span>
             <Link
               to="/admin/results"
@@ -296,118 +295,78 @@ export const AdminOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* If Active: Confidentiality Notice and Candidate Roster */}
-        {election.status === 'active' ? (
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <Lock className="w-5 h-5 text-amber-700 shrink-0" />
-                <span>
-                  <strong>Kerahasiaan Suara Berjalan:</strong> Total suara sah masuk saat ini adalah <strong>{totalVotes} suara</strong>. Hasil perolehan masing-masing kandidat disembunyikan sampai pemungutan suara resmi ditutup.
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {candidates.map((cand) => (
-                <div
-                  key={cand.id}
-                  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3"
-                >
-                  <img
-                    src={cand.photo_url || '/logo.png'}
-                    alt={cand.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                  />
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-black text-gold-dark bg-gold-accent/20 px-1 rounded">
-                      #{cand.candidate_number}
-                    </span>
-                    <h4 className="text-xs font-bold text-navy-primary truncate">
-                      {cand.name}
-                    </h4>
-                    <span className="text-[11px] text-slate-400 italic">
-                      Suara dirahasiakan
-                    </span>
-                  </div>
+        {/* Candidate Results Cards with Live Progress Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {candidateResults.map(({ candidate, voteCount, percentage, isWinner }) => (
+            <div
+              key={candidate.id}
+              className={`rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+                isWinner && totalVotes > 0
+                  ? 'bg-gradient-to-br from-amber-50/80 to-white border-gold-accent shadow-md shadow-gold-accent/10'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300'
+              }`}
+            >
+              {/* Leader Badge */}
+              {isWinner && totalVotes > 0 && (
+                <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-accent text-navy-primary font-black text-[10px] uppercase tracking-wider shadow-sm">
+                  <Trophy className="w-3 h-3 text-navy-primary" />
+                  <span>Pemenang</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* When Closed or Draft: Show candidate results cards */
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            {candidateResults.map(({ candidate, voteCount, percentage, isWinner }) => (
-              <div
-                key={candidate.id}
-                className={`rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
-                  isWinner && totalVotes > 0
-                    ? 'bg-gradient-to-br from-amber-50/80 to-white border-gold-accent shadow-md shadow-gold-accent/10'
-                    : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300'
-                }`}
-              >
-                {/* Leader Badge */}
-                {isWinner && totalVotes > 0 && (
-                  <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-accent text-navy-primary font-black text-[10px] uppercase tracking-wider shadow-sm">
-                    <Trophy className="w-3 h-3 text-navy-primary" />
-                    <span>Pemenang</span>
-                  </div>
-                )}
+              )}
 
-                <div>
-                  {/* Candidate Header with Photo and Number */}
-                  <div className="flex items-center gap-3.5 mb-4">
-                    <div className="relative shrink-0">
-                      <div className="stamp-frame p-1">
-                        <div className="stamp-border p-1 bg-white">
-                          <img
-                            src={candidate.photo_url || '/logo.png'}
-                            alt={candidate.name}
-                            className="w-12 h-12 sm:w-14 sm:h-14 object-cover object-top border border-amber-300/60"
-                          />
-                        </div>
+              <div>
+                {/* Candidate Header with Photo and Number */}
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="relative shrink-0">
+                    <div className="stamp-frame p-1">
+                      <div className="stamp-border p-1 bg-white">
+                        <img
+                          src={candidate.photo_url || '/logo.png'}
+                          alt={candidate.name}
+                          className="w-12 h-12 sm:w-14 sm:h-14 object-cover object-top border border-amber-300/60"
+                        />
                       </div>
                     </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-black tracking-wider uppercase text-gold-dark bg-gold-accent/20 px-2 py-0.5 rounded-md border border-gold-accent/30 inline-block mb-1">
-                        Kandidat #{String(candidate.candidate_number).padStart(2, '0')}
-                      </span>
-                      <h4 className="text-sm sm:text-base font-extrabold text-navy-primary truncate">
-                        {candidate.name}
-                      </h4>
-                      {candidate.title_or_role && (
-                        <p className="text-xs text-slate-500 font-medium truncate">
-                          {candidate.title_or_role}
-                        </p>
-                      )}
-                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-black tracking-wider uppercase text-gold-dark bg-gold-accent/20 px-2 py-0.5 rounded-md border border-gold-accent/30 inline-block mb-1">
+                      Kandidat #{String(candidate.candidate_number).padStart(2, '0')}
+                    </span>
+                    <h4 className="text-sm sm:text-base font-extrabold text-navy-primary truncate">
+                      {candidate.name}
+                    </h4>
+                    {candidate.title_or_role && (
+                      <p className="text-xs text-slate-500 font-medium truncate">
+                        {candidate.title_or_role}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Vote Count and Percentage */}
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl sm:text-3xl font-black text-navy-primary">
+                      {voteCount}{' '}
+                      <span className="text-xs font-bold text-slate-500">Suara</span>
+                    </span>
+                    <span className="text-sm font-extrabold text-navy-primary">
+                      {percentage}%
+                    </span>
                   </div>
 
-                  {/* Vote Count and Percentage */}
-                  <div className="space-y-2">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-2xl sm:text-3xl font-black text-navy-primary">
-                        {voteCount}{' '}
-                        <span className="text-xs font-bold text-slate-500">Suara</span>
-                      </span>
-                      <span className="text-sm font-extrabold text-navy-primary">
-                        {percentage}%
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
+                  {/* Progress Bar */}
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-gold-accent to-gold-dark rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* MODAL: Start Election Confirmation */}

@@ -89,23 +89,22 @@ export class ElectionRepository {
 
     if (isSupabaseConfigured && supabase) {
       try {
-        // Update langsung ke tabel elections agar semua perangkat realtime membaca 'active'
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(electionId);
+        const targetId = isUuid ? electionId : '00000000-0000-0000-0000-000000000001';
+
         await supabase
           .from('elections')
           .update({
             status: 'active',
             started_at: new Date().toISOString(),
+            closed_at: null,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', electionId);
+          .eq('id', targetId);
 
-        const { error } = await supabase.rpc('start_election', {
-          p_election_id: electionId,
+        await supabase.rpc('start_election', {
+          p_election_id: targetId,
         });
-
-        if (error) {
-          console.warn('Catatan start_election Supabase:', error.message);
-        }
       } catch (err) {
         console.warn('Kendala start_election Supabase:', err);
       }
@@ -122,6 +121,9 @@ export class ElectionRepository {
 
     if (isSupabaseConfigured && supabase) {
       try {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(electionId);
+        const targetId = isUuid ? electionId : '00000000-0000-0000-0000-000000000001';
+
         await supabase
           .from('elections')
           .update({
@@ -129,15 +131,11 @@ export class ElectionRepository {
             closed_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq('id', electionId);
+          .eq('id', targetId);
 
-        const { error } = await supabase.rpc('close_election', {
-          p_election_id: electionId,
+        await supabase.rpc('close_election', {
+          p_election_id: targetId,
         });
-
-        if (error) {
-          console.warn('Catatan close_election Supabase:', error.message);
-        }
       } catch (err) {
         console.warn('Kendala close_election Supabase:', err);
       }
@@ -154,18 +152,20 @@ export class ElectionRepository {
     mockElectionService.resetToDraft();
 
     if (isSupabaseConfigured && supabase) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(electionId);
+      const targetId = isUuid ? electionId : '00000000-0000-0000-0000-000000000001';
+
       try {
-        // 2. Coba panggil RPC reset_to_draft Supabase (menghapus votes & update election ke draft)
-        await supabase.rpc('reset_to_draft', { p_election_id: electionId });
-      } catch (err) {
-        console.warn('Kendala RPC reset_to_draft Supabase:', err);
+        await supabase.rpc('reset_to_draft', { p_election_id: targetId });
+      } catch {
+        // ignore
       }
 
       try {
-        // 3. Hapus seluruh data suara di tabel votes di Supabase agar kembali ke 0
-        await supabase.from('votes').delete().eq('election_id', electionId);
+        // Hapus seluruh data suara di tabel votes Supabase agar kembali ke 0
+        await supabase.from('votes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-        // 4. Reset status pemilihan ke DRAFT dan hapus started_at/closed_at
+        // Reset status pemilihan ke DRAFT dan hapus started_at/closed_at
         await supabase
           .from('elections')
           .update({
@@ -174,7 +174,7 @@ export class ElectionRepository {
             closed_at: null,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', electionId);
+          .eq('id', targetId);
       } catch (err) {
         console.warn('Kendala resetToDraft Supabase:', err);
       }

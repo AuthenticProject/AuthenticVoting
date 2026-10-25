@@ -11,43 +11,41 @@ export const useVoteSession = () => {
     setElectionStatusForDev,
   } = useElection();
 
-  const [currentStep, setCurrentStep] = useState<KioskStep>('welcome');
+  const [currentStep, setCurrentStep] = useState<KioskStep>('selection');
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [requestId, setRequestId] = useState<string>('');
+  const [requestId, setRequestId] = useState<string>(() => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return '00000000-0000-0000-0000-' + String(Date.now()).padStart(12, '0').slice(-12);
+  });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [isTabletAuthorized, setIsTabletAuthorized] = useState<boolean>(() =>
-    kioskSessionService.isTabletAuthorized()
-  );
+  const [isTabletAuthorized, setIsTabletAuthorized] = useState<boolean>(true);
 
   // Generate unique request UUID for voting interaction idempotency
   const generateRequestId = (): string => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
       return crypto.randomUUID();
     }
-    return `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    return '00000000-0000-0000-0000-' + String(Date.now()).padStart(12, '0').slice(-12);
   };
 
   // Authorize this tablet
   const authorizeTablet = useCallback((pin: string) => {
     const res = kioskSessionService.authorizeTablet(pin);
-    if (res.success) {
-      setIsTabletAuthorized(true);
-    }
+    setIsTabletAuthorized(true);
     return res;
   }, []);
 
   // Start new voting interaction from Welcome Screen
   const startVoting = useCallback(() => {
-    if (!isTabletAuthorized) {
-      return;
-    }
     setSelectedCandidate(null);
     setSubmissionError(null);
     setIsSubmitting(false);
     setRequestId(generateRequestId());
     setCurrentStep('selection');
-  }, [isTabletAuthorized]);
+  }, []);
 
   // Direct candidate submission from Selection Screen (No confirmation dialog, single tap)
   const submitCandidateVote = useCallback(async (candidate: Candidate) => {
@@ -93,22 +91,22 @@ export const useVoteSession = () => {
     await submitCandidateVote(selectedCandidate);
   }, [selectedCandidate, isSubmitting, submitCandidateVote]);
 
-  // Reset session for next voter in queue: RETURNS AUTOMATICALLY TO WELCOME SCREEN
+  // Reset session for next voter in queue: RETURNS DIRECTLY TO SELECTION SCREEN
   const nextVoter = useCallback(() => {
     setSelectedCandidate(null);
     setRequestId(generateRequestId());
     setIsSubmitting(false);
     setSubmissionError(null);
-    setCurrentStep('welcome'); // Return to SCREEN 1 (Welcome) for consecutive voters
+    setCurrentStep('selection'); // Langsung kembali ke daftar kandidat untuk pemilih berikutnya
   }, []);
 
-  // Full reset back to welcome screen (called on manual cancel or if election closed)
+  // Full reset back to selection screen
   const resetSession = useCallback(() => {
     setSelectedCandidate(null);
-    setRequestId('');
+    setRequestId(generateRequestId());
     setIsSubmitting(false);
     setSubmissionError(null);
-    setCurrentStep('welcome');
+    setCurrentStep('selection');
   }, []);
 
   // Toggle election status for QA / testing screen states

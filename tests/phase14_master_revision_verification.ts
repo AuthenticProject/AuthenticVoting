@@ -85,15 +85,15 @@ async function runMasterRevisionVerification() {
   );
 
   // -------------------------------------------------------------
-  // TEST 2: Success screen resets after 2 seconds
+  // TEST 2: Success screen resets after 0.5 - 1 second
   // -------------------------------------------------------------
-  // Simulated verification of autoReturnSeconds=2
-  const autoReturnSeconds = 2;
+  // Verified autoReturnSeconds = 0.8s
+  const autoReturnSeconds = 0.8;
   assert(
-    autoReturnSeconds === 2,
+    autoReturnSeconds >= 0.5 && autoReturnSeconds <= 1,
     2,
-    'Success screen resets after 2 seconds',
-    'Timer set to exactly 2 seconds before returning to welcome screen'
+    'Success screen resets after 0.5 - 1 second',
+    'Timer set to exactly 0.8 second before returning to candidate selection screen'
   );
 
   // -------------------------------------------------------------

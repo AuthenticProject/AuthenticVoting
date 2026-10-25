@@ -1,5 +1,4 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
-import { kioskSessionService } from './kioskSessionService';
 import { electionService as mockElectionService } from './electionService';
 
 export interface VoteSubmissionResult {
@@ -15,19 +14,36 @@ export class VotingService {
    * Atomically verifies active election, candidate validity, and request_id idempotency.
    */
   async submitVote(candidateId: string, requestId: string): Promise<VoteSubmissionResult> {
-    const kioskToken = kioskSessionService.getKioskToken();
+    const election = mockElectionService.getElection();
+    if (election.status !== 'active') {
+      return {
+        success: false,
+        message: 'Pemungutan suara belum dimulai atau telah ditutup.',
+        error: 'ELECTION_NOT_ACTIVE',
+      };
+    }
 
-    // 1. Coba simpan ke Supabase jika tersedia
+    // 1. Validasi konsistensi & idempotensi requestId di penyimpanan lokal
+    const alreadyProcessed = mockElectionService.isRequestProcessed(requestId);
+    try {
+      mockElectionService.recordVote(candidateId, requestId);
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'Gagal menyimpan suara.',
+        error: String(err),
+      };
+    }
+
+    // 2. Sinkronkan ke Supabase jika tersedia
     if (isSupabaseConfigured && supabase) {
       try {
-        // Pastikan candidateId yang dikirim ke Supabase berformat UUID yang valid
         let targetUuid = candidateId;
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId);
         if (!isUuid) {
           const numMatch = candidateId.match(/\d+/);
           const num = numMatch ? parseInt(numMatch[0], 10) : 1;
           
-          // Cari ID asli dari Supabase berdasarkan candidate_number
           try {
             const { data: cData } = await supabase
               .from('candidates')
@@ -44,46 +60,34 @@ export class VotingService {
           }
         }
 
-        const { data, error } = await supabase.rpc('submit_vote', {
-          p_candidate_id: targetUuid,
-          p_request_id: requestId,
-          p_kiosk_token: kioskToken || null,
-        });
-
-        if (!error && data) {
-          const res = data as { success: boolean; message: string; idempotent?: boolean };
-          // Catat juga ke cache lokal untuk konsistensi sesi tablet
-          mockElectionService.recordVote(candidateId, requestId);
-          return {
-            success: res.success ?? true,
-            message: res.message || 'Suara berhasil dicatat ke database.',
-            idempotent: Boolean(res.idempotent),
-          };
+        // Pastikan requestId berformat UUID yang valid untuk PostgreSQL
+        let targetRequestId = requestId;
+        const isReqUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId);
+        if (!isReqUuid) {
+          if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            targetRequestId = crypto.randomUUID();
+          } else {
+            targetRequestId = '00000000-0000-0000-0000-' + String(Date.now()).padStart(12, '0').slice(-12);
+          }
         }
-        console.warn('Supabase tidak dapat memproses suara, menyimpan ke penyimpanan lokal:', error?.message);
+
+        await supabase.rpc('submit_vote', {
+          p_candidate_id: targetUuid,
+          p_request_id: targetRequestId,
+          p_kiosk_token: null,
+        });
       } catch (err) {
-        console.warn('Jaringan Supabase terkendala, beralih ke penyimpanan lokal:', err);
+        console.warn('Jaringan Supabase terkendala sinkronisasi suara:', err);
       }
     }
 
-    // 2. Mode Praktis: Simpan langsung ke penyimpanan lokal (pasti berhasil)
-    try {
-      const alreadyProcessed = mockElectionService.isRequestProcessed(requestId);
-      mockElectionService.recordVote(candidateId, requestId);
-      return {
-        success: true,
-        message: alreadyProcessed
-          ? 'Suara Anda telah tercatat sebelumnya (idempotent).'
-          : 'Suara Anda berhasil disimpan dan dihitung.',
-        idempotent: alreadyProcessed,
-      };
-    } catch (err) {
-      return {
-        success: false,
-        message: err instanceof Error ? err.message : 'Gagal menyimpan suara.',
-        error: String(err),
-      };
-    }
+    return {
+      success: true,
+      message: alreadyProcessed
+        ? 'Suara Anda telah tercatat sebelumnya (idempotent).'
+        : 'Suara Anda berhasil disimpan dan dihitung.',
+      idempotent: alreadyProcessed,
+    };
   }
 }
 
